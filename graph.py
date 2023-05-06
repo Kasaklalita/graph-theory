@@ -1,8 +1,7 @@
 from typing import List
-from utils import split_row, InputType
+from utils import split_row, InputType, bcolors
 from vertex import Vertex
 from edge import Edge
-from copy import deepcopy
 
 
 class Graph:
@@ -101,7 +100,11 @@ class Graph:
             input_type: InputType = args[1]
 
             row_number = 1
-            fin = open(path, "r")
+            try:
+                fin = open(path, "r")
+            except IOError:
+                print(bcolors.FAIL + "Такой файл не найден" + bcolors.ENDC)
+                quit()
 
             match input_type:
                 # Матрица смежности
