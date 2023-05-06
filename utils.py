@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 
 class InputType(Enum):
@@ -7,8 +8,10 @@ class InputType(Enum):
     EDGE_LIST = 3
 
 
-def split_row(line: str):
+def split_row(line: str) -> List[int]:
     line = line.strip()
+    if len(line) == 0:
+        return []
     ints = line.split(" ")
     return [int(entity, base=10) for entity in ints]
 
