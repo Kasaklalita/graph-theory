@@ -31,11 +31,13 @@ class Graph:
     # def directed(self, directed):
     #     self.directed = directed
 
+    # Определение веса ребра, связывающего вершины
     def weight(self, i: Vertex, j: Vertex) -> int:
         if self.edge_in_list(i, j):
             return self.get_edge(i, j).weight
         return 0
 
+    # Список ребёр, инцидентных данной вершине
     def list_of_edges_by_vertex(self, v: Vertex) -> List[Edge]:
         res = []
         for edge in self.edge_list:
@@ -43,12 +45,14 @@ class Graph:
                 res.append(edge)
         return res
 
+    # Проверка наличия ребра с такими вершинами
     def edge_in_list(self, i: Vertex, j: Vertex) -> bool:
         for edge in self.__edge_list:
             if edge.a == i and edge.b == j:
                 return True
         return False
 
+    # Вывод информации о всех рёбрах графа
     def print_edjes_list(self) -> None:
         print("--- Edges List ---")
         for i in range(0, len(self.edge_list)):
@@ -62,6 +66,7 @@ class Graph:
                 res.append(Vertex(i + 1))
         return res
 
+    # Вывод информации о матрице смежности графа
     def print_adjacency_matrix(self):
         print("Adjacency matrix:")
         for i in range(0, len(self.adj_matrix)):
@@ -75,6 +80,14 @@ class Graph:
             if edge.a == i and edge.b == j:
                 return edge
         return Edge(-1, -1, -1)
+
+    # Удаление ребра из списка рёбер
+    def delete_edge(self, edge: Edge):
+        self.__edge_list.pop(self.__edge_list.index(edge))
+
+    # Добавление ребра в список рёбер
+    def add_edge(self, edge: Edge):
+        self.__edge_list.append(edge)
 
     def __init__(self, *args):
         self.__directed: bool = False
@@ -207,19 +220,3 @@ class Graph:
                         break
 
             self.__directed = not is_symmetrical
-
-
-def BFS(g: Graph, start: Vertex, visited: List[bool], container: List[int]):
-    queue: List[Vertex] = []
-    queue.append(start)
-
-    visited[start.number - 1] = True
-
-    while len(queue) > 0:
-        y = queue.pop()
-        container.append(y.number)
-
-        for edge in g.list_of_edges_by_vertex(y):
-            if not visited[edge.b.number - 1]:
-                queue.append(edge.b)
-                visited[edge.b.number - 1] = True

@@ -16,3 +16,6 @@ class Edge:
 
     def __str__(self) -> str:
         return f"{self.a.number} {self.b.number} {self.weight}"
+
+    def __eq__(self, other):
+        return self.a == other.a and self.b == other.b

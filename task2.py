@@ -1,8 +1,9 @@
-from graph import Graph, BFS
+from graph import Graph
 from vertex import Vertex
 from utils import InputType, print_help_info
 import sys
 from typing import List, Set
+from graph_utils import BFS
 
 
 def main():
