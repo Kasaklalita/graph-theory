@@ -2,6 +2,7 @@ from typing import List
 from utils import split_row, InputType
 from vertex import Vertex
 from edge import Edge
+from copy import deepcopy
 
 
 class Graph:
@@ -75,105 +76,150 @@ class Graph:
                 return edge
         return Edge(-1, -1, -1)
 
-    def __init__(self, path: str, input_type: InputType) -> None:
+    def __init__(self, *args):
         self.__directed: bool = False
         self.__edge_list: List[Edge] = []
         self.__adj_matrix: List[List[int]] = []
         self.__vertex_num: int = 0
 
-        row_number = 1
-        fin = open(path, "r")
+        # Создание через путь к файлу и тип ввода
+        if len(args) == 2:
+            path: str = args[0]
+            input_type: InputType = args[1]
 
-        match input_type:
-            # Матрица смежности
-            case InputType.ADJ_MATRIX:
-                while True:
-                    # Считывание строки матрицы
-                    new_line = fin.readline()
-                    if not new_line:
-                        break
+            row_number = 1
+            fin = open(path, "r")
 
-                    # Разбиение строки на ячейки
-                    values = split_row(new_line)
-                    if len(values) == 0:
-                        continue
-                    self.__vertex_num = len(values)
+            match input_type:
+                # Матрица смежности
+                case InputType.ADJ_MATRIX:
+                    while True:
+                        # Считывание строки матрицы
+                        new_line = fin.readline()
+                        if not new_line:
+                            break
 
-                    # Анализ каждой строки ячейки
-                    for i in range(0, len(values)):
-                        if values[i] != 0:
-                            # Создание нового ребра
-                            new_edge = Edge(row_number, i + 1, values[i])
-                            # Проверка на уникальность
+                        # Разбиение строки на ячейки
+                        values = split_row(new_line)
+                        if len(values) == 0:
+                            continue
+                        self.__vertex_num = len(values)
+
+                        # Анализ каждой строки ячейки
+                        for i in range(0, len(values)):
+                            if values[i] != 0:
+                                # Создание нового ребра
+                                new_edge = Edge(row_number, i + 1, values[i])
+                                # Проверка на уникальность
+                                if not self.edge_in_list(new_edge.a, new_edge.b):
+                                    self.edge_list.append(new_edge)
+                        row_number += 1
+
+                case InputType.ADJ_LIST:
+                    while True:
+                        # Прохождение по всем строкам
+                        new_line = fin.readline()
+                        if not new_line:
+                            break
+
+                        # Разбиение строки на ячейки
+                        values = split_row(new_line)
+                        for i in range(0, len(values)):
+                            new_edge = Edge(row_number, values[i], 1)
                             if not self.edge_in_list(new_edge.a, new_edge.b):
                                 self.edge_list.append(new_edge)
-                    row_number += 1
+                        # Переход к следующей вершине
+                        row_number += 1
+                        self.__vertex_num += 1
+                case InputType.EDGE_LIST:
+                    vertex_list: List[Vertex] = []
+                    while True:
+                        # Чтение очередного ребра
+                        new_line = fin.readline()
+                        if not new_line:
+                            break
 
-            case InputType.ADJ_LIST:
-                while True:
-                    # Прохождение по всем строкам
-                    new_line = fin.readline()
-                    if not new_line:
-                        break
+                        # Разбиение строки на значения
+                        values = split_row(new_line)
+                        if len(values) == 0:
+                            continue
 
-                    # Разбиение строки на ячейки
-                    values = split_row(new_line)
-                    for i in range(0, len(values)):
-                        new_edge = Edge(row_number, values[i], 1)
+                        weight = 0
+
+                        # Создание нового ребра
+                        if len(values) == 2:
+                            weight = 1
+                        else:
+                            weight = values[2]
+                        new_edge = Edge(values[0], values[1], weight)
+
+                        # Проверка ребра на уникальность
                         if not self.edge_in_list(new_edge.a, new_edge.b):
-                            self.edge_list.append(new_edge)
-                    # Переход к следующей вершине
-                    row_number += 1
-                    self.__vertex_num += 1
-            case InputType.EDGE_LIST:
-                vertex_list: List[Vertex] = []
-                while True:
-                    # Чтение очередного ребра
-                    new_line = fin.readline()
-                    if not new_line:
+                            self.__edge_list.append(new_edge)
+
+                            # Добавление уникальных вершин в список вершин
+                            if new_edge.a not in vertex_list:
+                                vertex_list.append(new_edge.a)
+                            if new_edge.b not in vertex_list:
+                                vertex_list.append(new_edge.b)
+                    self.__vertex_num = len(vertex_list)
+
+            # Создание матрицы смежности
+            for i in range(0, self.__vertex_num):
+                self.__adj_matrix.append([0] * self.__vertex_num)
+                for j in range(0, self.__vertex_num):
+                    if not (self.edge_in_list(Vertex(i + 1), Vertex(j + 1))):
+                        self.__adj_matrix[i][j] = 0
+                    else:
+                        self.__adj_matrix[i][j] = 1
+
+            # Проверка ориентированности графа
+            is_symmetrical = True
+            for i in range(0, self.__vertex_num):
+                for j in range(i + 1, self.__vertex_num):
+                    if self.adj_matrix[i][j] != self.adj_matrix[j][i]:
+                        is_symmetrical = False
                         break
 
-                    # Разбиение строки на значения
-                    values = split_row(new_line)
-                    if len(values) == 0:
-                        continue
+            # Определение ориентированности графа
+            self.__directed = not is_symmetrical
 
-                    weight = 0
+        # Создание через матрицу смежности
+        elif len(args) == 1:
+            matrix: List[List[int]] = args[0]
+            self.__vertex_num = len(matrix)
+            self.__adj_matrix = []
 
-                    # Создание нового ребра
-                    if len(values) == 2:
-                        weight = 1
-                    else:
-                        weight = values[2]
-                    new_edge = Edge(values[0], values[1], weight)
+            # Заполнение матрицы и списка рёбер
+            for i in range(0, self.vertex_num):
+                self.__adj_matrix.append([0] * self.vertex_num)
+                for j in range(0, self.vertex_num):
+                    self.__adj_matrix[i][j] = matrix[i][j]
+                    if matrix[i][j] != 0:
+                        self.__edge_list.append(Edge(i + 1, j + 1, matrix[i][j]))
 
-                    # Проверка ребра на уникальность
-                    if not self.edge_in_list(new_edge.a, new_edge.b):
-                        self.__edge_list.append(new_edge)
+            # Проверика ориентированности графа
+            is_symmetrical = True
+            for i in range(0, self.vertex_num):
+                for j in range(i + 1, self.vertex_num):
+                    if self.__adj_matrix[i][j] != self.__adj_matrix[j][i]:
+                        is_symmetrical = False
+                        break
 
-                        # Добавление уникальных вершин в список вершин
-                        if new_edge.a not in vertex_list:
-                            vertex_list.append(new_edge.a)
-                        if new_edge.b not in vertex_list:
-                            vertex_list.append(new_edge.b)
-                self.__vertex_num = len(vertex_list)
+            self.__directed = not is_symmetrical
 
-        # Создание матрицы смежности
-        for i in range(0, self.__vertex_num):
-            self.__adj_matrix.append([0] * self.__vertex_num)
-            for j in range(0, self.__vertex_num):
-                if not (self.edge_in_list(Vertex(i + 1), Vertex(j + 1))):
-                    self.__adj_matrix[i][j] = 0
-                else:
-                    self.__adj_matrix[i][j] = 1
 
-        # Проверка ориентированности графа
-        isSymmetrical = True
-        for i in range(0, self.__vertex_num):
-            for j in range(0, self.__vertex_num):
-                if self.adj_matrix[i][j] != self.adj_matrix[j][i]:
-                    isSymmetrical = False
-                    break
+def BFS(g: Graph, start: Vertex, visited: List[bool], container: List[int]):
+    queue: List[Vertex] = []
+    queue.append(start)
 
-        # Определение ориентированности графа
-        self.__directed = not isSymmetrical
+    visited[start.number - 1] = True
+
+    while len(queue) > 0:
+        y = queue.pop()
+        container.append(y.number)
+
+        for edge in g.list_of_edges_by_vertex(y):
+            if not visited[edge.b.number - 1]:
+                queue.append(edge.b)
+                visited[edge.b.number - 1] = True
