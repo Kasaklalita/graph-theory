@@ -13,3 +13,6 @@ class Vertex:
 
     def __str__(self) -> str:
         return f"{self.number}"
+
+    def __hash__(self):
+        return hash((self.number))

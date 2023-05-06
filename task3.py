@@ -3,7 +3,7 @@ from vertex import Vertex
 from utils import InputType, print_help_info
 import sys
 from typing import List, Set
-from graph_utils import BFS, find_joints
+from graph_utils import BFS, find_joints, find_bridges
 
 
 def main():
@@ -87,7 +87,15 @@ def main():
 
     # Ищем шарниры и мосты
     joints = find_joints(corr_graph)
-    print(joints)
+    bridges = find_bridges(corr_graph, joints)
+
+    if outputKeyExists:
+        fout = open(outputPath, "w")
+        fout.write(f"Мосты: {[bridge.info_as_bridge() for bridge in bridges]}\n")
+        fout.write(f"Шарниры: {[joint for joint in joints]}\n")
+    else:
+        print(f"Мосты: {[bridge.info_as_bridge() for bridge in bridges]}")
+        print(f"Шарниры: {[joint for joint in joints]}")
 
     # if outputKeyExists:
     #     outputFile = open(outputPath, "w")

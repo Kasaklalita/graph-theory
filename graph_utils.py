@@ -84,3 +84,40 @@ def find_joints(graph: Graph) -> Set[int]:
         for edge in deleted_edges:
             graph.add_edge(edge)
     return result
+
+
+# Поиск мостов в графе
+def find_bridges(graph: Graph, joints: Set[int]) -> Set[Edge]:
+    result: Set[Edge] = set()  # Результат
+
+    # Идём по всем шарнирам
+    for joint in joints:
+        current_vertex = Vertex(joint)
+        # Список всех рёбер, исходящих из вершины
+        edge_list = graph.list_of_edges_by_vertex(current_vertex)
+        # Подсчёт компонент в исходном графе
+        prev_connectivity_components_count = connectivity_components_count(graph)
+
+        # Идём по всем рёбрам вершины
+        for edge in edge_list:
+            # Отзеркаливаем ребро, чтобы удалить и его
+            mirrored_edge = Edge(edge.b.number, edge.a.number, edge.weight)
+            # Удаление обоих рёбер
+            graph.delete_edge(edge)
+            graph.delete_edge(mirrored_edge)
+            # Считаем компоненты связности
+            current_connectivity_components_number = connectivity_components_count(
+                graph
+            )
+            # Если число компонент увеличилось и это ребро ещё не смотрели
+            if (
+                current_connectivity_components_number
+                > prev_connectivity_components_count
+            ) and mirrored_edge not in result:
+                result.add(edge)
+
+            # Восстанавливаем рёбра
+            graph.add_edge(edge)
+            graph.add_edge(mirrored_edge)
+
+    return result

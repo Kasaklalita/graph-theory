@@ -14,8 +14,14 @@ class Edge:
     def contains(self, v: Vertex) -> bool:
         return self.a == v or self.b == v
 
+    def info_as_bridge(self):
+        return f"({self.a}, {self.b})"
+
     def __str__(self) -> str:
         return f"{self.a.number} {self.b.number} {self.weight}"
 
     def __eq__(self, other):
         return self.a == other.a and self.b == other.b
+
+    def __hash__(self):
+        return hash((self.a, self.b, self.weight))
