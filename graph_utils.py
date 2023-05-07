@@ -2,6 +2,7 @@ from graph import Graph
 from typing import List, Set
 from vertex import Vertex
 from edge import Edge
+from functools import cmp_to_key
 
 
 # Поиск в ширину
@@ -104,9 +105,7 @@ def find_bridges(graph: Graph, joints: Set[int]) -> Set[Edge]:
         # Список всех рёбер, исходящих из вершины
         edge_list = graph.list_of_edges_by_vertex(current_vertex)
         # Подсчёт компонент в исходном графе
-        prev_connectivity_components_count = connectivity_components_count(
-            graph
-        )
+        prev_connectivity_components_count = connectivity_components_count(graph)
 
         # Идём по всем рёбрам вершины
         for edge in edge_list:
@@ -116,8 +115,8 @@ def find_bridges(graph: Graph, joints: Set[int]) -> Set[Edge]:
             graph.delete_edge(edge)
             graph.delete_edge(mirrored_edge)
             # Считаем компоненты связности
-            current_connectivity_components_number = (
-                connectivity_components_count(graph)
+            current_connectivity_components_number = connectivity_components_count(
+                graph
             )
             # Если число компонент увеличилось и это ребро ещё не смотрели
             if (
@@ -162,12 +161,63 @@ def find_bridgess(graph: Graph):
                             )
                         )
                 else:
-                    exit_time[node] = min(
-                        exit_time[node], entry_time[neighbor]
-                    )
+                    exit_time[node] = min(exit_time[node], entry_time[neighbor])
 
     for node in range(n):
         if not visited[node]:
             dfs(node, None)
 
     return bridges
+
+
+# Компаратор для сортировки ребер по весу
+def edge_comparator(a: Edge, b: Edge) -> bool:
+    return (
+        a.weight < b.weight
+        or (a.weight == b.weight and a.a.number < b.a.number)
+        or (
+            a.weight == b.weight
+            and a.a.number == b.a.number
+            and a.b.number < b.b.number
+        )
+    )
+
+
+# Поиск вершины в списке множеств. Возвращает позицию множества с найденной вершиной
+def vertex_search(vertex_list: List[Set[int]], number: int) -> int:
+    for i in range(0, len(vertex_list)):
+        if number in vertex_list[i]:
+            return i
+    return -1
+
+
+# Алгоритм Краскала
+def kruskal(graph: Graph) -> Set[Edge]:
+    # Список множеств вершин, принадлежащих дереву
+    vertex_list: List[Set[int]] = [set()] * graph.vertex_num
+    for i in range(0, graph.vertex_num):
+        vertex_list[i].add(i + 1)
+
+    # Список рёбер, принадлежащих дереву
+    result: Set[Edge] = set()
+    edge_list: List[Edge] = graph.edge_list
+
+    edge_list = sorted(edge_list, key=cmp_to_key(edge_comparator))
+
+    for edge in edge_list:
+        a_location = vertex_search(vertex_list, edge.a.number)
+        b_location = vertex_search(vertex_list, edge.b.number)
+
+        if a_location != b_location:
+            print(edge)
+
+            result.add(edge)
+            vertex_list[a_location] = set().union(
+                vertex_list[a_location], vertex_list[b_location]
+            )
+            # vertex_list[a_location] = vertex_list[b_location] + vertex_list[a_location]
+            del vertex_list[b_location]
+
+        if len(vertex_list) == 1:
+            break
+    return result
