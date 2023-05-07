@@ -115,7 +115,7 @@ def main():
                 f"Длина кратчайшего пути от {start_vertex} до {end_vertex} равна {path_size}"
             )
             print_success("Путь: ", end="")
-            print_success([edge.info_as_bridge() for edge in edges])
+            print_success([edge.__str__() for edge in edges])
 
 
 if __name__ == "__main__":
