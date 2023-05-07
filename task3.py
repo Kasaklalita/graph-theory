@@ -1,9 +1,14 @@
 from graph import Graph
-from vertex import Vertex
 from utils import InputType, print_help_info
 import sys
 from typing import List, Set
-from graph_utils import BFS, find_joints, find_bridges
+from graph_utils import (
+    BFS,
+    find_joints,
+    find_bridges,
+    find_bridgess,
+    connectivity_components_count,
+)
 
 
 def main():
@@ -86,12 +91,14 @@ def main():
     corr_graph = Graph(corr_matrix)
 
     # Ищем шарниры и мосты
-    joints = find_joints(corr_graph)
-    bridges = find_bridges(corr_graph, joints)
+    joints = find_joints(g)
+    bridges = find_bridgess(corr_graph)
 
     if outputKeyExists:
         fout = open(outputPath, "w")
-        fout.write(f"Мосты: {[bridge.info_as_bridge() for bridge in bridges]}\n")
+        fout.write(
+            f"Мосты: {[bridge.info_as_bridge() for bridge in bridges]}\n"
+        )
         fout.write(f"Шарниры: {[joint for joint in joints]}\n")
     else:
         print(f"Мосты: {[bridge.info_as_bridge() for bridge in bridges]}")

@@ -53,37 +53,45 @@ def connectivity_components_count(graph: Graph):
 
 
 # Поиск шарниров в графе
-def find_joints(graph: Graph) -> Set[int]:
-    # Результат
-    result: Set[int] = set()
+def find_joints(graph: Graph):
+    # Господи Боже, как же я намучился с этой функцией...
+    visited = [False] * graph.vertex_num
+    disc_time = [float("inf")] * graph.vertex_num
+    low = [float("inf")] * graph.vertex_num
+    parent = [-1] * graph.vertex_num
+    is_articulation = [False] * graph.vertex_num
+    time = 0
 
-    # Подсчёт компонент связности в исходном графе
-    prev_connectivity_components_count = connectivity_components_count(graph)
+    def dfs(u):
+        nonlocal time
+        child_count = 0
+        visited[u] = True
+        disc_time[u] = low[u] = time
+        time += 1
 
-    # Идём по всем вершинам
-    for i in range(1, graph.vertex_num + 1):
-        # Список удалённых рёбер
-        deleted_edges: List[Edge] = []
+        for v in range(graph.vertex_num):
+            if graph.adj_matrix[u][v]:
+                if not visited[v]:
+                    parent[v] = u
+                    child_count += 1
+                    dfs(v)
 
-        # Идём по всем рёбрам
-        for edge in graph.edge_list:
-            # Если ребро содержит очередную вершину
-            if edge.contains(Vertex(i)):
-                # Удаление ребра из списка
-                deleted_edges.append(edge)
-                graph.delete_edge(edge)
+                    low[u] = min(low[u], low[v])
 
-        # Подсчёт компонент после удаления вершины. -1 потому что вершина тоже компонента
-        current_connectivity_components_count = connectivity_components_count(graph) - 1
+                    if parent[u] == -1 and child_count > 1:
+                        is_articulation[u] = True
 
-        # Если число увеличилось, то вершина - шарнир
-        if current_connectivity_components_count > prev_connectivity_components_count:
-            result.add(i)
+                    if parent[u] != -1 and low[v] >= disc_time[u]:
+                        is_articulation[u] = True
 
-        # Восстановление рёбер
-        for edge in deleted_edges:
-            graph.add_edge(edge)
-    return result
+                elif v != parent[u]:
+                    low[u] = min(low[u], disc_time[v])
+
+    for i in range(graph.vertex_num):
+        if not visited[i]:
+            dfs(i)
+
+    return [i + 1 for i, is_art in enumerate(is_articulation) if is_art]
 
 
 # Поиск мостов в графе
@@ -96,7 +104,9 @@ def find_bridges(graph: Graph, joints: Set[int]) -> Set[Edge]:
         # Список всех рёбер, исходящих из вершины
         edge_list = graph.list_of_edges_by_vertex(current_vertex)
         # Подсчёт компонент в исходном графе
-        prev_connectivity_components_count = connectivity_components_count(graph)
+        prev_connectivity_components_count = connectivity_components_count(
+            graph
+        )
 
         # Идём по всем рёбрам вершины
         for edge in edge_list:
@@ -106,8 +116,8 @@ def find_bridges(graph: Graph, joints: Set[int]) -> Set[Edge]:
             graph.delete_edge(edge)
             graph.delete_edge(mirrored_edge)
             # Считаем компоненты связности
-            current_connectivity_components_number = connectivity_components_count(
-                graph
+            current_connectivity_components_number = (
+                connectivity_components_count(graph)
             )
             # Если число компонент увеличилось и это ребро ещё не смотрели
             if (
@@ -121,3 +131,43 @@ def find_bridges(graph: Graph, joints: Set[int]) -> Set[Edge]:
             graph.add_edge(mirrored_edge)
 
     return result
+
+
+def find_bridgess(graph: Graph):
+    adj_matrix = graph.adj_matrix
+    n = len(adj_matrix)
+    bridges: List[Edge] = []
+    visited = [False] * n
+    entry_time = [0] * n
+    exit_time = [0] * n
+    time = 0
+
+    def dfs(node, parent):
+        nonlocal time
+        visited[node] = True
+        entry_time[node] = time
+        exit_time[node] = time
+        time += 1
+        for neighbor in range(n):
+            if adj_matrix[node][neighbor] == 1 and neighbor != parent:
+                if not visited[neighbor]:
+                    dfs(neighbor, node)
+                    exit_time[node] = min(exit_time[node], exit_time[neighbor])
+                    if entry_time[node] < exit_time[neighbor]:
+                        bridges.append(
+                            Edge(
+                                node + 1,
+                                neighbor + 1,
+                                graph.adj_matrix[node][neighbor],
+                            )
+                        )
+                else:
+                    exit_time[node] = min(
+                        exit_time[node], entry_time[neighbor]
+                    )
+
+    for node in range(n):
+        if not visited[node]:
+            dfs(node, None)
+
+    return bridges

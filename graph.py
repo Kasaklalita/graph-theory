@@ -5,11 +5,6 @@ from edge import Edge
 
 
 class Graph:
-    # bool directed = False
-    # edge_list = Edge[]
-    # ajd_matrix = int[[]]
-    # int vertex_num
-
     @property
     def directed(self):
         return self.__directed
@@ -25,10 +20,6 @@ class Graph:
     @property
     def vertex_num(self):
         return self.__vertex_num
-
-    # @directed.setter
-    # def directed(self, directed):
-    #     self.directed = directed
 
     # Определение веса ребра, связывающего вершины
     def weight(self, i: Vertex, j: Vertex) -> int:
@@ -82,7 +73,8 @@ class Graph:
 
     # Удаление ребра из списка рёбер
     def delete_edge(self, edge: Edge):
-        self.__edge_list.pop(self.__edge_list.index(edge))
+        del self.__edge_list[self.__edge_list.index(edge)]
+        # self.__edge_list.pop(self.__edge_list.index(edge))
 
     # Добавление ребра в список рёбер
     def add_edge(self, edge: Edge):
@@ -127,7 +119,9 @@ class Graph:
                                 # Создание нового ребра
                                 new_edge = Edge(row_number, i + 1, values[i])
                                 # Проверка на уникальность
-                                if not self.edge_in_list(new_edge.a, new_edge.b):
+                                if not self.edge_in_list(
+                                    new_edge.a, new_edge.b
+                                ):
                                     self.edge_list.append(new_edge)
                         row_number += 1
 
@@ -212,7 +206,9 @@ class Graph:
                 for j in range(0, self.vertex_num):
                     self.__adj_matrix[i][j] = matrix[i][j]
                     if matrix[i][j] != 0:
-                        self.__edge_list.append(Edge(i + 1, j + 1, matrix[i][j]))
+                        self.__edge_list.append(
+                            Edge(i + 1, j + 1, matrix[i][j])
+                        )
 
             # Проверика ориентированности графа
             is_symmetrical = True
