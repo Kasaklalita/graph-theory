@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import List
 
+INF = 99999
+
 
 class InputType(Enum):
     ADJ_MATRIX = 1

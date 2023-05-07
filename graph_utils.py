@@ -1,9 +1,9 @@
 from graph import Graph
-from typing import List, Set
+from typing import List, Set, Tuple
 from vertex import Vertex
 from edge import Edge
 from functools import cmp_to_key
-import math
+from utils import INF
 
 
 # Поиск в ширину
@@ -375,3 +375,53 @@ def prim(g: Graph) -> Set[Edge]:
         # удаление добавленного ребра из списка
         edge_list.pop(i)
     return result
+
+
+# Алгоритм Дейкстры
+def dijkstra(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
+    marks = [INF] * g.vertex_num
+    marks[start - 1] = 0
+
+    visited = [False] * g.vertex_num
+    prev = [-1] * g.vertex_num
+    prev[start - 1] = start
+
+    reached = False
+
+    while visited.count(False) != 0:
+        minVertex = Vertex(-1)
+        minMark = INF
+        for i in range(len(marks)):
+            if not visited[i] and marks[i] < minMark:
+                minMark = marks[i]
+                minVertex = Vertex(i + 1)
+
+        for e in g.list_of_edges_by_vertex(minVertex):
+            if (
+                not visited[e.b.number - 1]
+                and marks[e.b.number - 1] > marks[e.a.number - 1] + e.weight
+            ):
+                marks[e.b.number - 1] = marks[e.a.number - 1] + e.weight
+                prev[e.b.number - 1] = e.a.number
+                if e.b.number == end:
+                    reached = True
+
+        visited[minVertex.number - 1] = True
+
+        if marks.count(INF) == visited.count(False):
+            if not reached:
+                return -1, []
+            else:
+                break
+
+    path = []
+    length = 0
+    i = end - 1
+    while prev[i] != i + 1:
+        e = g.get_edge(Vertex(prev[i]), Vertex(i + 1))
+        length += e.weight
+        path.append(e)
+        i = prev[i] - 1
+
+    path.reverse()
+    return length, path
