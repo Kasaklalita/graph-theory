@@ -181,7 +181,9 @@ class Graph:
                     if not (self.edge_in_list(Vertex(i + 1), Vertex(j + 1))):
                         self.__adj_matrix[i][j] = 0
                     else:
-                        self.__adj_matrix[i][j] = 1
+                        self.__adj_matrix[i][j] = self.get_edge(
+                            Vertex(i + 1), Vertex(j + 1)
+                        ).weight
 
             # Проверка ориентированности графа
             is_symmetrical = True
