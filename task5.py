@@ -1,5 +1,5 @@
 from graph import Graph
-from utils import InputType, print_help_info
+from utils import InputType, print_help_info, print_fail, print_success
 import sys
 from graph_utils import dijkstra
 
@@ -109,13 +109,13 @@ def main():
 
     else:
         if len(edges) == 0:
-            print(f"Пути от {start_vertex} до {end_vertex} не существует")
+            print_fail(f"Пути от {start_vertex} до {end_vertex} не существует")
         else:
-            print(
+            print_success(
                 f"Длина кратчайшего пути от {start_vertex} до {end_vertex} равна {path_size}"
             )
-            print("Путь: ", end="")
-            print([edge.info_as_bridge() for edge in edges])
+            print_success("Путь: ", end="")
+            print_success([edge.info_as_bridge() for edge in edges])
 
 
 if __name__ == "__main__":

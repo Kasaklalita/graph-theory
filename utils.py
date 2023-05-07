@@ -40,3 +40,11 @@ def print_help_info():
         "\t-o <путь файла> - выходные данные сохраняются в файл, расположенный по указанному пути"
     )
     print("\t-h - справка\n")
+
+
+def print_fail(text, end="\n"):
+    print(bcolors.FAIL + str(text) + bcolors.ENDC, end=end)
+
+
+def print_success(text, end="\n"):
+    print(bcolors.OKGREEN + str(text) + bcolors.ENDC, end=end)
