@@ -52,7 +52,7 @@ class Graph:
         res: List[int] = []
         for i in range(0, self.vertex_num):
             if self.adj_matrix[v][i] != 0:
-                res.append(i + 1)
+                res.append(i)
         return res
 
     # Вывод информации о матрице смежности графа

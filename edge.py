@@ -12,10 +12,10 @@ class Edge:
         return self.a == v or self.b == v
 
     def info_as_bridge(self):
-        return f"({self.a}, {self.b})"
+        return f"({self.a + 1}, {self.b + 1})"
 
     def __str__(self) -> str:
-        return f"{self.a} {self.b} {self.weight}"
+        return f"{self.a + 1} {self.b + 1} {self.weight}"
 
     def __eq__(self, other):
         return self.a == other.a and self.b == other.b

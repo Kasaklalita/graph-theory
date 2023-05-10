@@ -1,7 +1,7 @@
 from graph import Graph
 from utils import InputType, print_help_info, print_fail, print_success
 import sys
-from graph_utils import dijkstra
+from graph_utils import dijkstra, corresponding_matrix
 
 
 def main():
@@ -69,25 +69,23 @@ def main():
     g = Graph(inputPath, inputType)
 
     # Матрица соотнесённого графа
-    corr_matrix = [
-        [0 for j in range(len(g.adj_matrix))] for i in range(len(g.adj_matrix))
-    ]
+    corr_matrix = corresponding_matrix(g.adj_matrix)
 
-    # Если граф ориентированный, работа идет с соотнесенным графом
-    if g.directed:
-        # Проходим по каждой вершине графа и ее смежным вершинам
-        for i in range(len(g.adj_matrix)):
-            for j in range(len(g.adj_matrix)):
-                if g.adj_matrix[i][j] == 1:
-                    # Если вершина i связана со вершиной j, то записываем связь в матрицу corr_matrix
-                    corr_matrix[i][j] = 1
-                    # также записываем связь в обратном направлении
-                    corr_matrix[j][i] = 1
-    else:
-        # Просто копируем исходную матрицу
-        for i in range(g.vertex_num):
-            for j in range(g.vertex_num):
-                corr_matrix[i][j] = g.adj_matrix[i][j]
+    # # Если граф ориентированный, работа идет с соотнесенным графом
+    # if g.directed:
+    #     # Проходим по каждой вершине графа и ее смежным вершинам
+    #     for i in range(len(g.adj_matrix)):
+    #         for j in range(len(g.adj_matrix)):
+    #             if g.adj_matrix[i][j] == 1:
+    #                 # Если вершина i связана со вершиной j, то записываем связь в матрицу corr_matrix
+    #                 corr_matrix[i][j] = 1
+    #                 # также записываем связь в обратном направлении
+    #                 corr_matrix[j][i] = 1
+    # else:
+    #     # Просто копируем исходную матрицу
+    #     for i in range(g.vertex_num):
+    #         for j in range(g.vertex_num):
+    #             corr_matrix[i][j] = g.adj_matrix[i][j]
 
     # Создание итогового графа
     corr_graph = Graph(corr_matrix)

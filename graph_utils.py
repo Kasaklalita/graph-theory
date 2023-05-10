@@ -22,6 +22,21 @@ def BFS(g: Graph, start: int, visited: List[bool], container: List[int]):
                 visited[edge.b - 1] = True
 
 
+def corresponding_matrix(matrix: List[List[int]], directed: bool = True):
+    corr_matrix = [[0 for j in range(len(matrix))] for i in range(len(matrix))]
+    for i in range(len(matrix)):
+        for j in range(len(matrix)):
+            if matrix[i][j] != 0:
+                # Если вершина i связана со вершиной j, то записываем связь в матрицу corr_matrix
+                corr_matrix[i][j] = matrix[i][j]
+                # также записываем связь в обратном направлении
+                corr_matrix[j][i] = matrix[i][j]
+            if matrix[j][i] != 0:
+                corr_matrix[i][j] = matrix[j][i]
+                corr_matrix[j][i] = matrix[j][i]
+    return corr_matrix
+
+
 # Подсчёт компонент связности
 def connectivity_components_count(graph: Graph):
     # Поиск в ширину для подсчёта компонент связности
@@ -92,7 +107,7 @@ def find_joints(graph: Graph):
         if not visited[i]:
             dfs(i)
 
-    return [i + 1 for i, is_art in enumerate(is_articulation) if is_art]
+    return [i for i, is_art in enumerate(is_articulation) if is_art]
 
 
 # Поиск мостов в графе
@@ -157,8 +172,8 @@ def find_bridgess(graph: Graph):
                     if entry_time[node] < exit_time[neighbor]:
                         bridges.append(
                             Edge(
-                                node + 1,
-                                neighbor + 1,
+                                node,
+                                neighbor,
                                 graph.adj_matrix[node][neighbor],
                             )
                         )
@@ -388,7 +403,7 @@ def kruskal(g: Graph) -> Set[Edge]:
 
 def prim(g: Graph) -> Set[Edge]:
     result: Set[Edge] = set()
-    tree_vertices = {1}  # начальная вершина - 1
+    tree_vertices = {0}  # начальная вершина - 1
     edge_list = g.list_of_edges_by_vertex(0)  # список инцидентных дереву ребер
 
     # пока все вершины не добавлены в дерево
