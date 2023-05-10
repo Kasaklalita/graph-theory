@@ -90,7 +90,7 @@ class Graph:
             path: str = args[0]
             input_type: InputType = args[1]
 
-            row_number = 1
+            row_number = 0
             try:
                 fin = open(path, "r")
             except IOError:
@@ -116,7 +116,7 @@ class Graph:
                         for i in range(0, len(values)):
                             if values[i] != 0:
                                 # Создание нового ребра
-                                new_edge = Edge(row_number, i + 1, values[i])
+                                new_edge = Edge(row_number, i, values[i])
                                 # Проверка на уникальность
                                 if not self.edge_in_list(
                                     new_edge.a, new_edge.b
@@ -134,7 +134,7 @@ class Graph:
                         # Разбиение строки на ячейки
                         values = split_row(new_line)
                         for i in range(0, len(values)):
-                            new_edge = Edge(row_number, values[i], 1)
+                            new_edge = Edge(row_number, values[i] - 1, 1)
                             if not self.edge_in_list(new_edge.a, new_edge.b):
                                 self.edge_list.append(new_edge)
                         # Переход к следующей вершине
@@ -160,7 +160,7 @@ class Graph:
                             weight = 1
                         else:
                             weight = values[2]
-                        new_edge = Edge(values[0], values[1], weight)
+                        new_edge = Edge(values[0] - 1, values[1] - 1, weight)
 
                         # Проверка ребра на уникальность
                         if not self.edge_in_list(new_edge.a, new_edge.b):

@@ -82,6 +82,7 @@ def main():
 
     # Создание итогового графа
     corr_graph = Graph(corr_matrix)
+    corr_graph.print_adjacency_matrix()
 
     # Ищем шарниры и мосты
     joints = find_joints(g)
