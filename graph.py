@@ -1,6 +1,5 @@
 from typing import List
 from utils import split_row, InputType, bcolors
-from vertex import Vertex
 from edge import Edge
 
 
@@ -22,13 +21,13 @@ class Graph:
         return self.__vertex_num
 
     # Определение веса ребра, связывающего вершины
-    def weight(self, i: Vertex, j: Vertex) -> int:
+    def weight(self, i: int, j: int) -> int:
         if self.edge_in_list(i, j):
             return self.get_edge(i, j).weight
         return 0
 
     # Список ребёр, инцидентных данной вершине
-    def list_of_edges_by_vertex(self, v: Vertex) -> List[Edge]:
+    def list_of_edges_by_vertex(self, v: int) -> List[Edge]:
         res = []
         for edge in self.edge_list:
             if edge.a == v:
@@ -36,7 +35,7 @@ class Graph:
         return res
 
     # Проверка наличия ребра с такими вершинами
-    def edge_in_list(self, i: Vertex, j: Vertex) -> bool:
+    def edge_in_list(self, i: int, j: int) -> bool:
         for edge in self.__edge_list:
             if edge.a == i and edge.b == j:
                 return True
@@ -49,11 +48,11 @@ class Graph:
             print(self.edge_list[i])
 
     # Получение списка вершин, смежных заданной вершине
-    def adjacency_list(self, v: Vertex) -> List[Vertex]:
-        res: List[Vertex] = []
+    def adjacency_list(self, v: int) -> List[int]:
+        res: List[int] = []
         for i in range(0, self.vertex_num):
-            if self.adj_matrix[v.number][i] != 0:
-                res.append(Vertex(i + 1))
+            if self.adj_matrix[v][i] != 0:
+                res.append(i + 1)
         return res
 
     # Вывод информации о матрице смежности графа
@@ -65,7 +64,7 @@ class Graph:
             print("")
 
     # Получение ребра с заданными вершинами из списка
-    def get_edge(self, i: Vertex, j: Vertex) -> Edge:
+    def get_edge(self, i: int, j: int) -> Edge:
         for edge in self.edge_list:
             if edge.a == i and edge.b == j:
                 return edge
@@ -142,7 +141,7 @@ class Graph:
                         row_number += 1
                         self.__vertex_num += 1
                 case InputType.EDGE_LIST:
-                    vertex_list: List[Vertex] = []
+                    vertex_list: List[int] = []
                     while True:
                         # Чтение очередного ребра
                         new_line = fin.readline()
@@ -178,12 +177,10 @@ class Graph:
             for i in range(0, self.__vertex_num):
                 self.__adj_matrix.append([0] * self.__vertex_num)
                 for j in range(0, self.__vertex_num):
-                    if not (self.edge_in_list(Vertex(i + 1), Vertex(j + 1))):
+                    if not (self.edge_in_list(i, j)):
                         self.__adj_matrix[i][j] = 0
                     else:
-                        self.__adj_matrix[i][j] = self.get_edge(
-                            Vertex(i + 1), Vertex(j + 1)
-                        ).weight
+                        self.__adj_matrix[i][j] = self.get_edge(i, j).weight
 
             # Проверка ориентированности графа
             is_symmetrical = True

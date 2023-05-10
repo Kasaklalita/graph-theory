@@ -1,5 +1,4 @@
 from graph import Graph
-from vertex import Vertex
 from edge import Edge
 from utils import InputType, print_help_info
 import sys

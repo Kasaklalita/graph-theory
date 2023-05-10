@@ -1,37 +1,36 @@
 from graph import Graph
 from typing import List, Set, Tuple
-from vertex import Vertex
 from edge import Edge
 from functools import cmp_to_key
 from utils import INF
 
 
 # Поиск в ширину
-def BFS(g: Graph, start: Vertex, visited: List[bool], container: List[int]):
-    queue: List[Vertex] = []
+def BFS(g: Graph, start: int, visited: List[bool], container: List[int]):
+    queue: List[int] = []
     queue.append(start)
 
-    visited[start.number - 1] = True
+    visited[start - 1] = True
 
     while len(queue) > 0:
         y = queue.pop()
-        container.append(y.number)
+        container.append(y)
 
         for edge in g.list_of_edges_by_vertex(y):
-            if not visited[edge.b.number - 1]:
+            if not visited[edge.b - 1]:
                 queue.append(edge.b)
-                visited[edge.b.number - 1] = True
+                visited[edge.b - 1] = True
 
 
 # Подсчёт компонент связности
 def connectivity_components_count(graph: Graph):
     # Поиск в ширину для подсчёта компонент связности
-    def BFS(g: Graph, start: Vertex, visited: List[int]):
+    def BFS(g: Graph, start: int, visited: List[int]):
         queue: List[int] = []  # Очередь
-        queue.append(start.number)
+        queue.append(start)
 
         # Добавление стартовой вершины в список посещённх
-        visited.append(start.number)
+        visited.append(start)
 
         # Пока очередь не пуста
         while len(queue) != 0:
@@ -39,17 +38,17 @@ def connectivity_components_count(graph: Graph):
             y = queue.pop()
 
             # Идём по всем рёбрам, содержащим вершину y
-            for edge in g.list_of_edges_by_vertex(Vertex(y)):
+            for edge in g.list_of_edges_by_vertex(y):
                 # Если другая вершина не посещена, то добавляем её в очередь
-                if edge.b.number not in visited:
-                    queue.append(edge.b.number)
-                    visited.append(edge.b.number)
+                if edge.b not in visited:
+                    queue.append(edge.b)
+                    visited.append(edge.b)
 
     visited: List[int] = []  # Список посещённых вершин
     result = 0  # Количество компонент связности
     for i in range(0, graph.vertex_num):
         if (i + 1) not in visited:
-            BFS(graph, Vertex(i + 1), visited)
+            BFS(graph, i, visited)
             result += 1
     return result
 
@@ -102,7 +101,7 @@ def find_bridges(graph: Graph, joints: Set[int]) -> Set[Edge]:
 
     # Идём по всем шарнирам
     for joint in joints:
-        current_vertex = Vertex(joint)
+        current_vertex = joint
         # Список всех рёбер, исходящих из вершины
         edge_list = graph.list_of_edges_by_vertex(current_vertex)
         # Подсчёт компонент в исходном графе
@@ -113,7 +112,7 @@ def find_bridges(graph: Graph, joints: Set[int]) -> Set[Edge]:
         # Идём по всем рёбрам вершины
         for edge in edge_list:
             # Отзеркаливаем ребро, чтобы удалить и его
-            mirrored_edge = Edge(edge.b.number, edge.a.number, edge.weight)
+            mirrored_edge = Edge(edge.b, edge.a, edge.weight)
             # Удаление обоих рёбер
             graph.delete_edge(edge)
             graph.delete_edge(mirrored_edge)
@@ -179,12 +178,8 @@ def find_bridgess(graph: Graph):
 def edge_comparator(a: Edge, b: Edge) -> bool:
     return (
         a.weight < b.weight
-        or (a.weight == b.weight and a.a.number < b.a.number)
-        or (
-            a.weight == b.weight
-            and a.a.number == b.a.number
-            and a.b.number < b.b.number
-        )
+        or (a.weight == b.weight and a.a < b.a)
+        or (a.weight == b.weight and a.a == b.a and a.b < b.b)
     )
 
 
@@ -196,57 +191,102 @@ def vertex_search(vertex_list: List[Set[int]], number: int) -> int:
     return -1
 
 
-# Алгоритм Краскала
 def kruskal(g: Graph) -> Set[Edge]:
-    vertex_list = [
-        set([i + 1]) for i in range(g.vertex_num)
-    ]  # список множеств вершин, принадлежащих дереву
-    result: Set[Edge] = set()  # список ребер, принадлежащих дереву
-    edge_list = g.edge_list
-    edge_list.sort(key=lambda e: e.weight)
+    parent = dict()
+    rank = dict()
 
-    for e in edge_list:
-        a_location = vertex_search(vertex_list, e.a.number + 1)
-        b_location = vertex_search(vertex_list, e.b.number + 1)
+    def make_set(vertice: int):
+        parent[vertice] = vertice
+        rank[vertice] = 0
 
-        if a_location != b_location:
-            result.add(e)
-            vertex_list[a_location].update(vertex_list[b_location])
-            vertex_list.pop(b_location)
+    def find(vertice: int):
+        if parent[vertice] != vertice:
+            parent[vertice] = find(parent[vertice])
+        return parent[vertice]
 
-        if len(vertex_list) == 1:
-            break
+    def union(vertice1: int, vertice2: int):
+        root1 = find(vertice1)
+        root2 = find(vertice2)
+        if root1 != root2:
+            if rank[root1] > rank[root2]:
+                parent[root2] = root1
+        else:
+            parent[root1] = root2
+        if rank[root1] == rank[root2]:
+            rank[root2] += 1
 
-    return result
+    # for vertice in graph["vertices"]:
+    minimum_spanning_tree: Set[Edge] = set()
+    for i in range(0, g.vertex_num):
+        vertice = i
+        make_set(vertice)
+        # edges = list(graph["edges"])
+        edges = g.edge_list
+        edges.sort(key=lambda edge: edge.weight)
+        # print edges
+        for edge in edges:
+            if find(edge.a) != find(edge.b):
+                union(edge.a, edge.b)
+            minimum_spanning_tree.add(edge)
 
-    # # Список множеств вершин, принадлежащих дереву
-    # vertex_list: List[Set[int]] = [set()] * graph.vertex_num
-    # for i in range(0, graph.vertex_num):
-    #     vertex_list[i].add(i + 1)
+    return minimum_spanning_tree
 
-    # # Список рёбер, принадлежащих дереву
-    # result: Set[Edge] = set()
-    # edge_list: List[Edge] = graph.edge_list
 
-    # edge_list = sorted(edge_list, key=cmp_to_key(edge_comparator))
+# # Алгоритм Краскала
+# def kruskal(g: Graph) -> Set[Edge]:
+#     vertex_list = [
+#         set([i + 1]) for i in range(g.vertex_num)
+#     ]  # список множеств вершин, принадлежащих дереву
+#     result: Set[Edge] = set()  # список ребер, принадлежащих дереву
+#     edge_list = g.edge_list
+#     print("start sorting")
+#     print(edge_list)
+#     print("end sorting")
 
-    # for edge in edge_list:
-    #     a_location = vertex_search(vertex_list, edge.a.number)
-    #     b_location = vertex_search(vertex_list, edge.b.number)
+#     for e in edge_list:
+#         edge_list.sort(key=lambda e: e.weight)
 
-    #     if a_location != b_location:
-    #         print(edge)
+#         a_location = vertex_search(vertex_list, e.a.number + 1)
+#         b_location = vertex_search(vertex_list, e.b.number + 1)
 
-    #         result.add(edge)
-    #         vertex_list[a_location] = set().union(
-    #             vertex_list[a_location], vertex_list[b_location]
-    #         )
-    #         # vertex_list[a_location] = vertex_list[b_location] + vertex_list[a_location]
-    #         del vertex_list[b_location]
+#         if a_location != b_location:
+#             result.add(e)
+#             vertex_list[a_location].update(vertex_list[b_location])
+#             vertex_list.pop(b_location)
 
-    #     if len(vertex_list) == 1:
-    #         break
-    # return result
+#         if len(vertex_list) == 1:
+#             break
+
+#     return result
+
+# # Список множеств вершин, принадлежащих дереву
+# vertex_list: List[Set[int]] = [set()] * graph.vertex_num
+# for i in range(0, graph.vertex_num):
+#     vertex_list[i].add(i + 1)
+
+# # Список рёбер, принадлежащих дереву
+# result: Set[Edge] = set()
+# edge_list: List[Edge] = graph.edge_list
+
+# edge_list = sorted(edge_list, key=cmp_to_key(edge_comparator))
+
+# for edge in edge_list:
+#     a_location = vertex_search(vertex_list, edge.a.number)
+#     b_location = vertex_search(vertex_list, edge.b.number)
+
+#     if a_location != b_location:
+#         print(edge)
+
+#         result.add(edge)
+#         vertex_list[a_location] = set().union(
+#             vertex_list[a_location], vertex_list[b_location]
+#         )
+#         # vertex_list[a_location] = vertex_list[b_location] + vertex_list[a_location]
+#         del vertex_list[b_location]
+
+#     if len(vertex_list) == 1:
+#         break
+# return result
 
 
 # Алгоритм Прима
@@ -349,28 +389,29 @@ def kruskal(g: Graph) -> Set[Edge]:
 def prim(g: Graph) -> Set[Edge]:
     result: Set[Edge] = set()
     tree_vertices = {1}  # начальная вершина - 1
-    edge_list = g.list_of_edges_by_vertex(
-        Vertex(1)
-    )  # список инцидентных дереву ребер
+    edge_list = g.list_of_edges_by_vertex(0)  # список инцидентных дереву ребер
 
     # пока все вершины не добавлены в дерево
     while len(tree_vertices) != g.vertex_num:
         # сортировка списка ребер
+        print("edge sorting")
         edge_list.sort(key=cmp_to_key(edge_comparator))
+        print(edge_list)
+        print("end sorting")
 
         # поиск первого ребра, не создающего цикла
         i = 0
-        while edge_list[i].b.number in tree_vertices:
+        while edge_list[i].b in tree_vertices:
             i += 1
         # добавление полученного ребра
         result.add(edge_list[i])
 
         # добавление вершины в дерево
-        tree_vertices.add(edge_list[i].b.number)
+        tree_vertices.add(edge_list[i].b)
 
         # добавление всех инцидентных ребер, не ведущих в дерево, в список
         for e in g.list_of_edges_by_vertex(edge_list[i].b):
-            if e.b.number not in tree_vertices:
+            if e.b not in tree_vertices:
                 edge_list.append(e)
         # удаление добавленного ребра из списка
         edge_list.pop(i)
@@ -389,24 +430,24 @@ def dijkstra(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
     reached = False
 
     while visited.count(False) != 0:
-        minVertex = Vertex(-1)
+        minVertex = -1
         minMark = INF
         for i in range(len(marks)):
             if not visited[i] and marks[i] < minMark:
                 minMark = marks[i]
-                minVertex = Vertex(i + 1)
+                minVertex = i + 1
 
         for e in g.list_of_edges_by_vertex(minVertex):
             if (
-                not visited[e.b.number - 1]
-                and marks[e.b.number - 1] > marks[e.a.number - 1] + e.weight
+                not visited[e.b - 1]
+                and marks[e.b - 1] > marks[e.a - 1] + e.weight
             ):
-                marks[e.b.number - 1] = marks[e.a.number - 1] + e.weight
-                prev[e.b.number - 1] = e.a.number
-                if e.b.number == end:
+                marks[e.b - 1] = marks[e.a - 1] + e.weight
+                prev[e.b - 1] = e.a
+                if e.b == end:
                     reached = True
 
-        visited[minVertex.number - 1] = True
+        visited[minVertex - 1] = True
 
         if marks.count(INF) == visited.count(False):
             if not reached:
@@ -418,7 +459,7 @@ def dijkstra(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
     length = 0
     i = end - 1
     while prev[i] != i + 1:
-        e = g.get_edge(Vertex(prev[i]), Vertex(i + 1))
+        e = g.get_edge(prev[i], i + 1)
         length += e.weight
         path.append(e)
         i = prev[i] - 1
