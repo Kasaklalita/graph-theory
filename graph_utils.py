@@ -194,9 +194,7 @@ def find_bridges(graph: Graph):
                         )
                 else:
                     # Обновление времени выхода из вершины
-                    exit_time[node] = min(
-                        exit_time[node], entry_time[neighbor]
-                    )
+                    exit_time[node] = min(exit_time[node], entry_time[neighbor])
 
     for node in range(n):
         # Начинаем обход с каждой вершины
@@ -470,10 +468,7 @@ def dijkstra(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
                 minVertex = i + 1
 
         for e in g.list_of_edges_by_vertex(minVertex):
-            if (
-                not visited[e.b - 1]
-                and marks[e.b - 1] > marks[e.a - 1] + e.weight
-            ):
+            if not visited[e.b - 1] and marks[e.b - 1] > marks[e.a - 1] + e.weight:
                 marks[e.b - 1] = marks[e.a - 1] + e.weight
                 prev[e.b - 1] = e.a
                 if e.b == end:
@@ -498,3 +493,163 @@ def dijkstra(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
 
     path.reverse()
     return length, path
+
+
+# Алгоритм Дейкстры
+# def dijkstraa(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
+#     INF = 9999999
+
+#     def arg_min(T, S):
+#         amin = -1
+#         m = INF  # максимальное значение
+#         for i, t in enumerate(T):
+#             if t < m and i not in S:
+#                 m = t
+#                 amin = i
+
+#         return amin
+
+#     N = g.vertex_num  # число вершин в графе
+#     T = [INF] * N  # последняя строка таблицы
+
+#     v = 0  # стартовая вершина (нумерация с нуля)
+#     S = {v}  # просмотренные вершины
+#     T[v] = 0  # нулевой вес для стартовой вершины
+#     M = [0] * N  # оптимальные связи между вершинами
+
+#     while v != -1:  # цикл, пока не просмотрим все вершины
+#         for j, dw in enumerate(
+#             g.adj_matrix[v]
+#         ):  # перебираем все связанные вершины с вершиной v
+#             if j not in S:  # если вершина еще не просмотрена
+#                 w = T[v] + dw
+#                 if w < T[j]:
+#                     T[j] = w
+#                     M[j] = v  # связываем вершину j с вершиной v
+
+#         v = arg_min(T, S)  # выбираем следующий узел с наименьшим весом
+#         if v >= 0:  # выбрана очередная вершина
+#             S.add(v)  # добавляем новую вершину в рассмотрение
+
+#     # print(T, M, sep="\n")
+
+#     # формирование оптимального маршрута:
+#     start = 0
+#     end = 4
+#     P = [end]
+#     while end != start:
+#         end = M[P[-1]]
+#         P.append(end)
+
+#     return (1, P)
+
+
+def dijkstraa(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
+    # ИНДЕКСЫ
+    start = start - 1
+    end = end - 1
+    INF = 999999
+    current_path = 0
+    paths: List[int] = [INF] * g.vertex_num
+    visited: List[bool] = [False] * g.vertex_num
+    prev = [-1] * g.vertex_num
+
+    def find_min_vertex():
+        min_value = INF + 1
+        min_vertex = -1
+        for i in range(g.vertex_num):
+            if paths[i] < min_value and not visited[i]:
+                min_value = paths[i]
+                min_vertex = i
+        return min_vertex
+
+    paths[start] = 0
+    prev[start] = start
+
+    # Ищем само расстояние
+    for i in range(g.vertex_num):
+        start = find_min_vertex()
+        current_path = paths[start]
+        for edge in g.list_of_edges_by_vertex(start):
+            if current_path + edge.weight < paths[edge.b]:
+                paths[edge.b] = current_path + edge.weight
+                # prev.append([edge.a, edge.b, edge.weight])
+                prev[edge.b] = edge.a
+        visited[start] = True
+    # print(prev)
+    # print(paths)
+    # print(visited)
+
+    # Если не дошли
+    final_length = paths[end]
+    if final_length == INF:
+        return (INF, [])
+
+    # Ищем обратный путь
+    path: List[Edge] = []
+    length = final_length
+
+    # while length > 0:
+    #     end = prev_vertex
+    #     prev_vertex = prev[prev_vertex]
+    #     print(prev_vertex, end)
+    #     edge = g.get_edge(prev_vertex, end)
+    #     path.append(Edge(prev_vertex, end, edge.weight))
+    #     length -= edge.weight
+    prev_vertex = prev[end]
+    # print(prev_vertex)
+    edge = g.get_edge(prev_vertex, end)
+    path.append(Edge(prev_vertex, end, edge.weight))
+    length -= edge.weight
+    while length > 0:
+        end = prev_vertex
+        prev_vertex = prev[prev_vertex]
+        # print(prev_vertex, end)
+        edge = g.get_edge(prev_vertex, end)
+        path.append(Edge(prev_vertex, end, edge.weight))
+        # print(path)
+        length -= edge.weight
+
+    path.reverse()
+    return (final_length, path)
+    # end = prev_vertex
+    # prev_vertex = prev[prev_vertex]
+    # print(prev_vertex, end)
+    # path.append(Edge(prev_vertex, end, g.get_edge(prev_vertex, end).weight))
+    # print(path)
+
+    # end = prev_vertex
+    # prev_vertex = prev[prev_vertex]
+    # print(prev_vertex, end)
+    # path.append(Edge(prev_vertex, end, g.get_edge(prev_vertex, end).weight))
+    # print(path)
+
+    # end = prev_vertex
+    # prev_vertex = prev[prev_vertex]
+    # print(prev_vertex, end)
+    # path.append(Edge(prev_vertex, end, g.get_edge(prev_vertex, end).weight))
+    # print(path)
+
+    # while path_length
+    # for i in range(g.vertex_num):
+    #     edge_list = g.list_of_edges_by_vertex(end)
+    #     if len(edge_list) == 0:
+    #         print("asdf")
+    #         for k in range(g.vertex_num):
+    #             for edge in g.list_of_edges_by_vertex(k):
+    #                 if edge.contains(end):
+    #                     # print(edge.info_as_bridge())
+    #                     if paths[edge.a] + edge.weight == paths[end]:
+    #                         path.append(Edge(edge.a, end, edge.weight))
+    #                         end = edge.a
+    #                         print(end)
+    #                         path_length -= edge.weight
+
+    #                         break
+    #     else:
+    #         for edge in g.list_of_edges_by_vertex(end):
+    #             if path_length - edge.weight == paths[edge.b]:
+    #                 path.append(Edge(end, edge.b, edge.weight))
+    #                 path_length -= edge.weight
+    #                 end = edge.b
+    # print(final_length, path)

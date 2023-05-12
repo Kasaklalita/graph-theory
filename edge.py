@@ -18,7 +18,9 @@ class Edge:
         return f"{self.a + 1} {self.b + 1} {self.weight}"
 
     def __eq__(self, other):
-        return self.a == other.a and self.b == other.b
+        return (
+            self.a == other.a and self.b == other.b and self.weight == other.weight
+        ) or (self.a == other.b and self.b == other.a and self.weight == other.weight)
 
     def __hash__(self):
         return hash((self.a, self.b, self.weight))

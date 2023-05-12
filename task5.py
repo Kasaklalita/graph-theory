@@ -1,7 +1,7 @@
 from graph import Graph
 from utils import InputType, print_help_info, print_fail, print_success
 import sys
-from graph_utils import dijkstra, corresponding_matrix
+from graph_utils import dijkstra, dijkstraa
 from copy import deepcopy
 
 
@@ -68,16 +68,12 @@ def main():
     inputPath = args[1]
 
     g = Graph(inputPath, inputType)
-    g.print_adjacency_matrix()
-
-    path_size, edges = dijkstra(start_vertex, end_vertex, g)
+    path_size, edges = dijkstraa(start_vertex, end_vertex, g)
 
     if outputKeyExists:
         fout = open(outputPath, "w")
         if len(edges) == 0:
-            fout.write(
-                f"Пути от {start_vertex} до {end_vertex} не существует\n"
-            )
+            fout.write(f"Пути от {start_vertex} до {end_vertex} не существует\n")
         else:
             fout.write(
                 f"Длина кратчайшего пути от {start_vertex} до {end_vertex} равна {path_size}\n"
