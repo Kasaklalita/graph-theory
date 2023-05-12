@@ -69,17 +69,6 @@ def main():
 
     g = Graph(inputPath, inputType)
     g.print_adjacency_matrix()
-    # print(g.directed)
-
-    # corr_matrix = deepcopy(g.adj_matrix)
-    # for i in range(len(corr_matrix)):
-    #     for j in range(len(corr_matrix)):
-    #         if corr_matrix[i][j] == 0:
-    #             corr_matrix[i][j] = corr_matrix[j][i]
-    corr_matrix = corresponding_matrix(g.adj_matrix)
-    corr_graph = Graph(corr_matrix)
-    corr_graph.print_adjacency_matrix()
-    print(corr_graph.directed)
 
     path_size, edges = dijkstra(start_vertex, end_vertex, g)
 

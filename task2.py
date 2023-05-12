@@ -66,7 +66,8 @@ def main():
         # Создание соотнесённого графа
         # Создаем матрицу соотнесенного графа, заполненную нулями
         corr_matrix = [
-            [0 for j in range(len(g.adj_matrix))] for i in range(len(g.adj_matrix))
+            [0 for j in range(len(g.adj_matrix))]
+            for i in range(len(g.adj_matrix))
         ]
 
         # Проходим по каждой вершине графа и ее смежным вершинам
@@ -91,7 +92,7 @@ def main():
         for i in range(0, corr_graph.vertex_num):
             if not visited[i]:
                 component: List[int] = []
-                BFS(corr_graph, Vertex(i + 1), visited, component)
+                BFS(corr_graph, i, visited, component)
                 res = set(component)
                 components.append(res)
 
@@ -101,14 +102,14 @@ def main():
             # Обнуление вектора посещённости
             visited = [False] * g.vertex_num
             pot_component: List[int] = []
-            BFS(g, Vertex(i + 1), visited, pot_component)
+            BFS(g, i, visited, pot_component)
             scc: Set[int] = {i + 1}
 
             for j in range(0, g.vertex_num):
                 reverse_visited: List[bool] = [False] * g.vertex_num
                 reverse_component: List[int] = []
                 if j != i and visited[j]:
-                    BFS(g, Vertex(j + 1), reverse_visited, reverse_component)
+                    BFS(g, i, reverse_visited, reverse_component)
                     if (i + 1) in reverse_component:
                         scc.add(j + 1)
 
@@ -159,7 +160,7 @@ def main():
         for i in range(0, g.vertex_num):
             if not visited[i]:
                 component: List[int] = []
-                BFS(g, Vertex(i + 1), visited, component)
+                BFS(g, i, visited, component)
                 res = set(component)
                 components.append(res)
 
