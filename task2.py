@@ -103,15 +103,15 @@ def main():
             visited = [False] * g.vertex_num
             pot_component: List[int] = []
             BFS(g, i, visited, pot_component)
-            scc: Set[int] = {i + 1}
+            scc: Set[int] = {i}
 
             for j in range(0, g.vertex_num):
                 reverse_visited: List[bool] = [False] * g.vertex_num
                 reverse_component: List[int] = []
                 if j != i and visited[j]:
                     BFS(g, i, reverse_visited, reverse_component)
-                    if (i + 1) in reverse_component:
-                        scc.add(j + 1)
+                    if i in reverse_component:
+                        scc.add(j)
 
             if scc not in sccs:
                 sccs.append(scc)
