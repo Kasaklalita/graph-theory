@@ -23,17 +23,25 @@ def BFS(g: Graph, start: int, visited: List[bool], container: List[int]):
 
 
 def corresponding_matrix(matrix: List[List[int]], directed: bool = True):
-    corr_matrix = [[0 for j in range(len(matrix))] for i in range(len(matrix))]
-    for i in range(len(matrix)):
-        for j in range(len(matrix)):
-            if matrix[i][j] != 0:
-                # Если вершина i связана со вершиной j, то записываем связь в матрицу corr_matrix
-                corr_matrix[i][j] = matrix[i][j]
-                # также записываем связь в обратном направлении
-                corr_matrix[j][i] = matrix[i][j]
-            if matrix[j][i] != 0:
-                corr_matrix[i][j] = matrix[j][i]
-                corr_matrix[j][i] = matrix[j][i]
+    corr_matrix = [[0] * len(matrix)] * len(matrix)
+    n = len(matrix)
+    # for i in range(len(matrix)):
+    #     for j in range(i, len(matrix)):
+    #         if matrix[i][j] != 0:
+    #             corr_matrix[i][j] = matrix[i][j]
+    #             corr_matrix[j][i] = matrix[i][j]
+    #         elif matrix[i][j] == 0:
+    #             corr_matrix[i][j] = 0
+    #             corr_matrix[j][i] = 0
+    # return corr_matrix
+    for i in range(n):
+        for j in range(i + 1, n):
+            ij, ji = matrix[i][j], matrix[j][i]
+            print(ij, ji)
+            if ji == 0:
+                corr_matrix[j][i] = 1
+            elif ij == 0:
+                corr_matrix[i][j] = ji
     return corr_matrix
 
 
@@ -110,46 +118,48 @@ def find_joints(graph: Graph):
     return [i for i, is_art in enumerate(is_articulation) if is_art]
 
 
-# Поиск мостов в графе
-def find_bridges(graph: Graph, joints: Set[int]) -> Set[Edge]:
-    result: Set[Edge] = set()  # Результат
+# Поиск мостов в графе СТАРАЯ ВЕРСИЯ
+# def find_bridges(graph: Graph, joints: Set[int]) -> Set[Edge]:
+#     result: Set[Edge] = set()  # Результат
 
-    # Идём по всем шарнирам
-    for joint in joints:
-        current_vertex = joint
-        # Список всех рёбер, исходящих из вершины
-        edge_list = graph.list_of_edges_by_vertex(current_vertex)
-        # Подсчёт компонент в исходном графе
-        prev_connectivity_components_count = connectivity_components_count(
-            graph
-        )
+#     # Идём по всем шарнирам
+#     for joint in joints:
+#         current_vertex = joint
+#         # Список всех рёбер, исходящих из вершины
+#         edge_list = graph.list_of_edges_by_vertex(current_vertex)
+#         # Подсчёт компонент в исходном графе
+#         prev_connectivity_components_count = connectivity_components_count(
+#             graph
+#         )
 
-        # Идём по всем рёбрам вершины
-        for edge in edge_list:
-            # Отзеркаливаем ребро, чтобы удалить и его
-            mirrored_edge = Edge(edge.b, edge.a, edge.weight)
-            # Удаление обоих рёбер
-            graph.delete_edge(edge)
-            graph.delete_edge(mirrored_edge)
-            # Считаем компоненты связности
-            current_connectivity_components_number = (
-                connectivity_components_count(graph)
-            )
-            # Если число компонент увеличилось и это ребро ещё не смотрели
-            if (
-                current_connectivity_components_number
-                > prev_connectivity_components_count
-            ) and mirrored_edge not in result:
-                result.add(edge)
+#         # Идём по всем рёбрам вершины
+#         for edge in edge_list:
+#             # Отзеркаливаем ребро, чтобы удалить и его
+#             mirrored_edge = Edge(edge.b, edge.a, edge.weight)
+#             # Удаление обоих рёбер
+#             graph.delete_edge(edge)
+#             graph.delete_edge(mirrored_edge)
+#             # Считаем компоненты связности
+#             current_connectivity_components_number = (
+#                 connectivity_components_count(graph)
+#             )
+#             # Если число компонент увеличилось и это ребро ещё не смотрели
+#             if (
+#                 current_connectivity_components_number
+#                 > prev_connectivity_components_count
+#             ) and mirrored_edge not in result:
+#                 result.add(edge)
 
-            # Восстанавливаем рёбра
-            graph.add_edge(edge)
-            graph.add_edge(mirrored_edge)
+#             # Восстанавливаем рёбра
+#             graph.add_edge(edge)
+#             graph.add_edge(mirrored_edge)
 
-    return result
+#     return result
 
 
-def find_bridgess(graph: Graph):
+# Нахождение мостов
+def find_bridges(graph: Graph):
+    # Инициализация переменных
     adj_matrix = graph.adj_matrix
     n = len(adj_matrix)
     bridges: List[Edge] = []
@@ -159,6 +169,7 @@ def find_bridgess(graph: Graph):
     time = 0
 
     def dfs(node, parent):
+        # Обход в глубину
         nonlocal time
         visited[node] = True
         entry_time[node] = time
@@ -166,9 +177,13 @@ def find_bridgess(graph: Graph):
         time += 1
         for neighbor in range(n):
             if adj_matrix[node][neighbor] == 1 and neighbor != parent:
+                # Проверяем соседей текущей вершины
                 if not visited[neighbor]:
+                    # Обход не посещенного соседа
                     dfs(neighbor, node)
+                    # Пересчет времени выхода из вершины
                     exit_time[node] = min(exit_time[node], exit_time[neighbor])
+                    # Проверка наличия моста
                     if entry_time[node] < exit_time[neighbor]:
                         bridges.append(
                             Edge(
@@ -178,11 +193,13 @@ def find_bridgess(graph: Graph):
                             )
                         )
                 else:
+                    # Обновление времени выхода из вершины
                     exit_time[node] = min(
                         exit_time[node], entry_time[neighbor]
                     )
 
     for node in range(n):
+        # Начинаем обход с каждой вершины
         if not visited[node]:
             dfs(node, None)
 

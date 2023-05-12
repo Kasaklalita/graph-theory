@@ -205,9 +205,7 @@ class Graph:
                 for j in range(0, self.vertex_num):
                     self.__adj_matrix[i][j] = matrix[i][j]
                     if matrix[i][j] != 0:
-                        self.__edge_list.append(
-                            Edge(i + 1, j + 1, matrix[i][j])
-                        )
+                        self.__edge_list.append(Edge(i, j, matrix[i][j]))
 
             # Проверика ориентированности графа
             is_symmetrical = True

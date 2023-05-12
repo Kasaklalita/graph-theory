@@ -1,9 +1,10 @@
 from graph import Graph
 from utils import InputType, print_help_info
 import sys
-from graph_utils import find_joints, find_bridgess, corresponding_matrix
+from graph_utils import find_joints, find_bridges
 
 
+# DONE
 def main():
     inputType: InputType = InputType.EDGE_LIST
     inputPath: str
@@ -57,17 +58,12 @@ def main():
 
     inputPath = args[1]
 
+    # Создание графа
     g = Graph(inputPath, inputType)
-
-    # Матрица соотнесённого графа
-    corr_matrix = corresponding_matrix(g.adj_matrix)
-
-    # Создание итогового графа
-    corr_graph = Graph(corr_matrix)
 
     # Ищем шарниры и мосты
     joints = find_joints(g)
-    bridges = find_bridgess(corr_graph)
+    bridges = find_bridges(g)
 
     if outputKeyExists:
         fout = open(outputPath, "w")
