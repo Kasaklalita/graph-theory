@@ -3,6 +3,23 @@ from typing import List, Set, Tuple
 from edge import Edge
 from functools import cmp_to_key
 from utils import INF
+from copy import deepcopy
+
+
+def floyd_warshall(g: Graph) -> List[List[int]]:
+    distances_matrix = deepcopy(g.adj_matrix)
+
+    for i in range(len(distances_matrix)):
+        for j in range(len(distances_matrix)):
+            for k in range(len(distances_matrix)):
+                if (
+                    distances_matrix[j][k]
+                    > distances_matrix[j][i] + distances_matrix[i][k]
+                ):
+                    distances_matrix[j][k] = (
+                        distances_matrix[j][i] + distances_matrix[i][k]
+                    )
+    return distances_matrix
 
 
 # Поиск в ширину
@@ -548,7 +565,6 @@ def dijkstraa(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
     # ИНДЕКСЫ
     start = start - 1
     end = end - 1
-    INF = 999999
     current_path = 0
     paths: List[int] = [INF] * g.vertex_num
     visited: List[bool] = [False] * g.vertex_num
