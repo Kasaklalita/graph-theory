@@ -1,7 +1,7 @@
 from graph import Graph
 from utils import InputType, print_help_info, print_fail, print_success
 import sys
-from graph_utils import dijkstra, dijkstraa
+from graph_utils import dijkstra
 from copy import deepcopy
 
 
@@ -68,7 +68,7 @@ def main():
     inputPath = args[1]
 
     g = Graph(inputPath, inputType)
-    path_size, edges = dijkstraa(start_vertex, end_vertex, g)
+    path_size, edges = dijkstra(start_vertex, end_vertex, g)
 
     if outputKeyExists:
         fout = open(outputPath, "w")

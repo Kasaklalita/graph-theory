@@ -4,6 +4,7 @@ from edge import Edge
 from functools import cmp_to_key
 from utils import INF
 from copy import deepcopy
+from collections import deque
 
 
 def floyd_warshall(g: Graph) -> List[List[int]]:
@@ -105,10 +106,10 @@ def find_joints(graph: Graph):
 
     def dfs(u):
         nonlocal time
-        child_count = 0
-        visited[u] = True
+        child_count = 0  # Количество потомков
+        visited[u] = True  # Вершина посещена
         disc_time[u] = low[u] = time
-        time += 1
+        time += 1  # Увеличиваем время выхода
 
         for v in range(graph.vertex_num):
             if graph.adj_matrix[u][v]:
@@ -466,50 +467,50 @@ def prim(g: Graph) -> Set[Edge]:
 
 
 # Алгоритм Дейкстры
-def dijkstra(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
-    marks = [INF] * g.vertex_num
-    marks[start - 1] = 0
+# def dijkstra(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
+#     marks = [INF] * g.vertex_num
+#     marks[start - 1] = 0
 
-    visited = [False] * g.vertex_num
-    prev = [-1] * g.vertex_num
-    prev[start - 1] = start
+#     visited = [False] * g.vertex_num
+#     prev = [-1] * g.vertex_num
+#     prev[start - 1] = start
 
-    reached = False
+#     reached = False
 
-    while visited.count(False) != 0:
-        minVertex = -1
-        minMark = INF
-        for i in range(len(marks)):
-            if not visited[i] and marks[i] < minMark:
-                minMark = marks[i]
-                minVertex = i + 1
+#     while visited.count(False) != 0:
+#         minVertex = -1
+#         minMark = INF
+#         for i in range(len(marks)):
+#             if not visited[i] and marks[i] < minMark:
+#                 minMark = marks[i]
+#                 minVertex = i + 1
 
-        for e in g.list_of_edges_by_vertex(minVertex):
-            if not visited[e.b - 1] and marks[e.b - 1] > marks[e.a - 1] + e.weight:
-                marks[e.b - 1] = marks[e.a - 1] + e.weight
-                prev[e.b - 1] = e.a
-                if e.b == end:
-                    reached = True
+#         for e in g.list_of_edges_by_vertex(minVertex):
+#             if not visited[e.b - 1] and marks[e.b - 1] > marks[e.a - 1] + e.weight:
+#                 marks[e.b - 1] = marks[e.a - 1] + e.weight
+#                 prev[e.b - 1] = e.a
+#                 if e.b == end:
+#                     reached = True
 
-        visited[minVertex - 1] = True
+#         visited[minVertex - 1] = True
 
-        if marks.count(INF) == visited.count(False):
-            if not reached:
-                return -1, []
-            else:
-                break
+#         if marks.count(INF) == visited.count(False):
+#             if not reached:
+#                 return -1, []
+#             else:
+#                 break
 
-    path = []
-    length = 0
-    i = end - 1
-    while prev[i] != i + 1:
-        e = g.get_edge(prev[i], i + 1)
-        length += e.weight
-        path.append(e)
-        i = prev[i] - 1
+#     path = []
+#     length = 0
+#     i = end - 1
+#     while prev[i] != i + 1:
+#         e = g.get_edge(prev[i], i + 1)
+#         length += e.weight
+#         path.append(e)
+#         i = prev[i] - 1
 
-    path.reverse()
-    return length, path
+#     path.reverse()
+#     return length, path
 
 
 # Алгоритм Дейкстры
@@ -561,7 +562,7 @@ def dijkstra(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
 #     return (1, P)
 
 
-def dijkstraa(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
+def dijkstra(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
     # ИНДЕКСЫ
     start = start - 1
     end = end - 1
@@ -589,12 +590,8 @@ def dijkstraa(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
         for edge in g.list_of_edges_by_vertex(start):
             if current_path + edge.weight < paths[edge.b]:
                 paths[edge.b] = current_path + edge.weight
-                # prev.append([edge.a, edge.b, edge.weight])
                 prev[edge.b] = edge.a
         visited[start] = True
-    # print(prev)
-    # print(paths)
-    # print(visited)
 
     # Если не дошли
     final_length = paths[end]
@@ -605,67 +602,151 @@ def dijkstraa(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
     path: List[Edge] = []
     length = final_length
 
-    # while length > 0:
-    #     end = prev_vertex
-    #     prev_vertex = prev[prev_vertex]
-    #     print(prev_vertex, end)
-    #     edge = g.get_edge(prev_vertex, end)
-    #     path.append(Edge(prev_vertex, end, edge.weight))
-    #     length -= edge.weight
     prev_vertex = prev[end]
-    # print(prev_vertex)
     edge = g.get_edge(prev_vertex, end)
     path.append(Edge(prev_vertex, end, edge.weight))
     length -= edge.weight
     while length > 0:
         end = prev_vertex
         prev_vertex = prev[prev_vertex]
-        # print(prev_vertex, end)
         edge = g.get_edge(prev_vertex, end)
         path.append(Edge(prev_vertex, end, edge.weight))
-        # print(path)
         length -= edge.weight
 
     path.reverse()
     return (final_length, path)
-    # end = prev_vertex
-    # prev_vertex = prev[prev_vertex]
-    # print(prev_vertex, end)
-    # path.append(Edge(prev_vertex, end, g.get_edge(prev_vertex, end).weight))
-    # print(path)
 
-    # end = prev_vertex
-    # prev_vertex = prev[prev_vertex]
-    # print(prev_vertex, end)
-    # path.append(Edge(prev_vertex, end, g.get_edge(prev_vertex, end).weight))
-    # print(path)
 
-    # end = prev_vertex
-    # prev_vertex = prev[prev_vertex]
-    # print(prev_vertex, end)
-    # path.append(Edge(prev_vertex, end, g.get_edge(prev_vertex, end).weight))
-    # print(path)
+# Алгоритм дейкстры, возвращает
+def dijkstra_for_distances(start: int, g: Graph) -> List[int]:
+    # ИНДЕКСЫ
+    start = start - 1
+    current_path = 0
+    paths: List[int] = [INF] * g.vertex_num
+    visited: List[bool] = [False] * g.vertex_num
+    prev = [-1] * g.vertex_num
 
-    # while path_length
-    # for i in range(g.vertex_num):
-    #     edge_list = g.list_of_edges_by_vertex(end)
-    #     if len(edge_list) == 0:
-    #         print("asdf")
-    #         for k in range(g.vertex_num):
-    #             for edge in g.list_of_edges_by_vertex(k):
-    #                 if edge.contains(end):
-    #                     # print(edge.info_as_bridge())
-    #                     if paths[edge.a] + edge.weight == paths[end]:
-    #                         path.append(Edge(edge.a, end, edge.weight))
-    #                         end = edge.a
-    #                         print(end)
-    #                         path_length -= edge.weight
+    def find_min_vertex():
+        min_value = INF + 1
+        min_vertex = -1
+        for i in range(g.vertex_num):
+            if paths[i] < min_value and not visited[i]:
+                min_value = paths[i]
+                min_vertex = i
+        return min_vertex
 
-    #                         break
-    #     else:
-    #         for edge in g.list_of_edges_by_vertex(end):
-    #             if path_length - edge.weight == paths[edge.b]:
-    #                 path.append(Edge(end, edge.b, edge.weight))
-    #                 path_length -= edge.weight
-    #                 end = edge.b
-    # print(final_length, path)
+    paths[start] = 0
+    prev[start] = start
+
+    print(paths)
+
+    # Ищем само расстояние
+    for i in range(g.vertex_num):
+        start = find_min_vertex()
+        current_path = paths[start]
+        print([edge.__str__() for edge in g.list_of_edges_by_vertex(start)])
+        for edge in g.list_of_edges_by_vertex(start):
+            if current_path + edge.weight < paths[edge.b]:
+                paths[edge.b] = current_path + edge.weight
+                prev[edge.b] = edge.a
+        visited[start] = True
+    return paths
+
+
+# Алгоритм Беллмана-Форда-Мура
+def bellman_ford_moore(start: int, g: Graph) -> List[int]:
+    start = start - 1  # индекс начальной вершины
+    distances = [INF] * g.vertex_num
+    distances[start] = 0
+
+    # Идём по каждой оставшейся вершине
+    for i in range(0, g.vertex_num - 1):
+        # Идём по каждому ребру
+        for edge in g.edge_list:
+            if distances[edge.b] > distances[edge.a] + edge.weight:
+                distances[edge.b] = distances[edge.a] + edge.weight
+    return distances
+
+
+def find_neg_cycle(g: Graph) -> bool:
+    dist = bellman_ford_moore(1, g)
+
+    for edge in g.edge_list:
+        if dist[edge.b] > dist[edge.a] + edge.weight:
+            return True
+    return False
+
+
+# def levit(start: int, g: Graph):
+#     start = start - 1  # ПОЛУЧАЕМ ИНДЕКС НАЧАЛЬНОЙ ВЕРШИНЫ
+
+#     m0: List[int] = []
+#     m1: List[int] = []
+#     m2: List[int] = []
+
+#     dist: List[int] = [INF] * g.vertex_num
+
+#     for i in range(g.vertex_num):
+#         if i == start:
+#             m1.append(i)
+#         else:
+#             m0.append(i)
+
+#     while len(m1) > 0:
+#         current_vertex = m1[0]
+#         m1 = m1[1::]
+#         m2.append(current_vertex)
+
+#         for edge in g.list_of_edges_by_vertex(current_vertex):
+#             next_vertex = edge.b
+#             if next_vertex in m0:
+#                 dist[next_vertex] = dist[current_vertex] + edge.weight
+#                 m0 = [element for element in m0 if element != next_vertex]
+#                 m1.append(next_vertex)
+#             elif next_vertex in m1:
+#                 dist[next_vertex] = min(
+#                     dist[next_vertex], dist[current_vertex] + edge.weight
+#                 )
+#             else:
+#                 if dist[next_vertex] > dist[current_vertex] + edge.weight:
+#                     dist[next_vertex] = dist[current_vertex] + edge.weight
+#                     m2 = [element for element in m2 if element != next_vertex]
+#                     m1.append(next_vertex)
+#     return dist
+
+
+def levit(start: int, g: Graph):
+    start = start - 1
+    m0 = deque()
+    m1 = deque()
+    m2 = deque()
+
+    dist = [INF] * g.vertex_num
+    dist[start] = 0
+
+    for i in range(g.vertex_num):
+        if i == start:
+            m1.append(i)
+        else:
+            m0.append(i)
+
+    while m1:
+        vCur = m1.popleft()
+        m2.append(vCur)
+
+        for e in g.list_of_edges_by_vertex(vCur):
+            vNext = e.b
+            if vNext in m0:
+                dist[vNext] = dist[vCur] + e.weight
+                m0.remove(vNext)
+                m1.append(vNext)
+            elif vNext in m1:
+                dist[vNext] = min(dist[vNext], dist[vCur] + e.weight)
+            else:
+                if dist[vNext] > dist[vCur] + e.weight:
+                    dist[vNext] = dist[vCur] + e.weight
+                    if vNext in m2:
+                        m2.remove(vNext)
+                        m1.append(vNext)
+
+    return dist

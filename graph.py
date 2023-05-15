@@ -20,6 +20,10 @@ class Graph:
     def vertex_num(self):
         return self.__vertex_num
 
+    @property
+    def has_negative(self):
+        return self.__has_negative
+
     # Определение веса ребра, связывающего вершины
     def weight(self, i: int, j: int) -> int:
         if self.edge_in_list(i, j):
@@ -84,6 +88,7 @@ class Graph:
         self.__edge_list: List[Edge] = []
         self.__adj_matrix: List[List[int]] = []
         self.__vertex_num: int = 0
+        self.__has_negative: bool = False
 
         # Создание через путь к файлу и тип ввода
         if len(args) == 2:
@@ -118,9 +123,7 @@ class Graph:
                                 # Создание нового ребра
                                 new_edge = Edge(row_number, i, values[i])
                                 # Проверка на уникальность
-                                if not self.edge_in_list(
-                                    new_edge.a, new_edge.b
-                                ):
+                                if not self.edge_in_list(new_edge.a, new_edge.b):
                                     self.edge_list.append(new_edge)
                         row_number += 1
 
@@ -181,6 +184,8 @@ class Graph:
                         self.__adj_matrix[i][j] = 0
                     else:
                         self.__adj_matrix[i][j] = self.get_edge(i, j).weight
+                        if self.get_edge(i, j).weight < 0:
+                            self.__has_negative = True
 
             # Проверка ориентированности графа
             is_symmetrical = True
@@ -206,6 +211,8 @@ class Graph:
                     self.__adj_matrix[i][j] = matrix[i][j]
                     if matrix[i][j] != 0:
                         self.__edge_list.append(Edge(i, j, matrix[i][j]))
+                    if matrix[i][j] < 0:
+                        self.__has_negative = True
 
             # Проверика ориентированности графа
             is_symmetrical = True
