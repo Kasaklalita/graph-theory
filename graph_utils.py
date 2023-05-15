@@ -212,7 +212,9 @@ def find_bridges(graph: Graph):
                         )
                 else:
                     # Обновление времени выхода из вершины
-                    exit_time[node] = min(exit_time[node], entry_time[neighbor])
+                    exit_time[node] = min(
+                        exit_time[node], entry_time[neighbor]
+                    )
 
     for node in range(n):
         # Начинаем обход с каждой вершины
@@ -750,3 +752,17 @@ def levit(start: int, g: Graph):
                         m1.append(vNext)
 
     return dist
+
+
+# Алгоритм Джонсона
+def johnson(g: Graph) -> List[List[int]]:
+    result: List[List[int]] = []
+    n = g.vertex_num
+
+    h: List[int] = [INF] * (n + 1)
+    h[n] = 0
+
+    edited_edge_list: List[Edge] = deepcopy(g.edge_list)
+    print(edited_edge_list)
+
+    return result
