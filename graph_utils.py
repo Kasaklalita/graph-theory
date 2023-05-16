@@ -212,9 +212,7 @@ def find_bridges(graph: Graph):
                         )
                 else:
                     # Обновление времени выхода из вершины
-                    exit_time[node] = min(
-                        exit_time[node], entry_time[neighbor]
-                    )
+                    exit_time[node] = min(exit_time[node], entry_time[neighbor])
 
     for node in range(n):
         # Начинаем обход с каждой вершины
@@ -640,13 +638,10 @@ def dijkstra_for_distances(start: int, g: Graph) -> List[int]:
     paths[start] = 0
     prev[start] = start
 
-    print(paths)
-
     # Ищем само расстояние
     for i in range(g.vertex_num):
         start = find_min_vertex()
         current_path = paths[start]
-        print([edge.__str__() for edge in g.list_of_edges_by_vertex(start)])
         for edge in g.list_of_edges_by_vertex(start):
             if current_path + edge.weight < paths[edge.b]:
                 paths[edge.b] = current_path + edge.weight
@@ -763,6 +758,25 @@ def johnson(g: Graph) -> List[List[int]]:
     h[n] = 0
 
     edited_edge_list: List[Edge] = deepcopy(g.edge_list)
-    print(edited_edge_list)
+    for i in range(n):
+        edited_edge_list.append(Edge(n, i, 0))
+
+    # Алгоритм Беллмана-Форда из вершины n + 1
+    for i in range(n + 1):
+        for edge in edited_edge_list:
+            h[edge.b] = min(h[edge.b], h[edge.a] + edge.weight)
+
+    # Пересчёт весов исходного графа
+    for edge in g.edge_list:
+        edge.weight += h[edge.a] - h[edge.b]
+
+    # Алгоритм Дейкстры
+    for i in range(n):
+        dist = dijkstra_for_distances(i + 1, g)
+        true_dist: List[int] = []
+
+        for j in range(n):
+            true_dist.append(dist[j] - h[i] + h[j])
+        result.append(true_dist)
 
     return result

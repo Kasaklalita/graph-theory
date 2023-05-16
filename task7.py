@@ -1,5 +1,5 @@
 from graph import Graph
-from utils import InputType, print_help_info, print_fail, print_success
+from utils import InputType, print_help_info, print_fail, print_success, INF
 import sys
 from graph_utils import find_neg_cycle, johnson
 
@@ -81,18 +81,22 @@ def main():
         else:
             print_success("В графе нет ребёр отрицательного веса")
 
-    johnson(g)
+    dist = johnson(g)
 
-    # if outputKeyExists:
-    #     fout = open(outputPath, "w")
-    #     fout.write("Кратчайшие расстояния:\n")
-    #     for i in range(len(result)):
-    #         fout.write(f"{result[i][0]} - {result[i][1]}: {result[i][2]}\n")
+    if outputKeyExists:
+        fout = open(outputPath, "w")
+        fout.write("Кратчайшие пути:")
+        for i in range(len(dist)):
+            for j in range(len(dist)):
+                if i != j and dist[i][j] < INF - 100:
+                    fout.write(f"{i + 1} - {j + 1}: {dist[i][j]}\n")
 
-    # else:
-    #     print_success("Кратчайшие расстояния:")
-    #     for i in range(len(result)):
-    #         print_success(f"{result[i][0]} - {result[i][1]}: {result[i][2]}")
+    else:
+        print_success("Кратчайшие пути:")
+        for i in range(len(dist)):
+            for j in range(len(dist)):
+                if i != j and dist[i][j] < INF - 100:
+                    print_success(f"{i + 1} - {j + 1}: {dist[i][j]}")
 
 
 if __name__ == "__main__":
