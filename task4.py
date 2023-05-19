@@ -1,9 +1,10 @@
 from graph import Graph
 from edge import Edge
-from utils import InputType, print_help_info
+from utils import InputType, print_help_info, print_success
 import sys
 from typing import List, Set
-from graph_utils import kruskal, prim
+from graph_utils import kruskal, prim, boruvka
+import time
 
 
 def main():
@@ -68,9 +69,7 @@ def main():
     g = Graph(inputPath, inputType)
 
     # Матрица соотнесённого графа
-    matrix = [
-        [0 for j in range(len(g.adj_matrix))] for i in range(len(g.adj_matrix))
-    ]
+    matrix = [[0 for j in range(len(g.adj_matrix))] for i in range(len(g.adj_matrix))]
 
     # Если граф ориентированный, работа идет с соотнесенным графом
     if g.directed:
@@ -92,27 +91,84 @@ def main():
     corr_graph = Graph(matrix)
 
     # Алгоритмы
-    tree: Set[Edge]
+    tree: List[Edge]
 
     match algorithm_type:
         case "-k":
             tree = kruskal(corr_graph)
-            print_results(tree, "")
+            print_results(tree, outputPath)
         case "-p":
             tree = prim(corr_graph)
-            print_results(tree, "")
+            print_results(tree, outputPath)
+        case "-b":
+            tree = boruvka(corr_graph)
+            print_results(tree, outputPath)
+        case _:
+            # Алгоритм Краскала
+            start_time = time.time()
+            tree = kruskal(corr_graph)
+            end_time = time.time()
+            if outputKeyExists:
+                fout = open(outputPath, "a")
+                fout.write("Алгоритм Краскала\n")
+                fout.write(
+                    f"Длительность: {(end_time - start_time) * 1000} миллисекунд\n"
+                )
+                fout.close()
+            else:
+                print("Алгоритм Краскала")
+                print(f"Длительность: {(end_time - start_time) * 1000} миллисекунд")
+            print_results(tree, outputPath)
+
+            # Алгоритм Прима
+            start_time = time.time()
+            tree = prim(corr_graph)
+            end_time = time.time()
+            if outputKeyExists:
+                fout = open(outputPath, "a")
+                fout.write("Алгоритм Прима\n")
+                fout.write(
+                    f"Длительность: {(end_time - start_time) * 1000} миллисекунд\n"
+                )
+                fout.close()
+            else:
+                print("Алгоритм Прима")
+                print(f"Длительность: {(end_time - start_time) * 1000} миллисекунд")
+            print_results(tree, outputPath)
+
+            # Алгоритм Борувки
+            start_time = time.time()
+            tree = boruvka(corr_graph)
+            end_time = time.time()
+            if outputKeyExists:
+                fout = open(outputPath, "a")
+                fout.write("Алгоритм Борувки\n")
+                fout.write(
+                    f"Длительность: {(end_time - start_time) * 1000} миллисекунд\n"
+                )
+                fout.close()
+            else:
+                print("Алгоритм Борувки")
+                print(f"Длительность: {(end_time - start_time) * 1000} миллисекунд")
+            print_results(tree, outputPath)
 
 
-def print_results(tree: Set[Edge], output_path: str):
+def print_results(tree: List[Edge], output_path: str):
     if output_path == "":
         weight = 0
-        print("Минимальное остовное дерево:")
+        print_success("Минимальное остовное дерево:")
         for edge in tree:
-            print(f"({edge.__str__()})", end=" ")
+            print_success(f"({edge.__str__()})", end=" ")
             weight += edge.weight
-        print(f"\nВес: {weight}")
+        print_success(f"\nВес: {weight}")
     else:
-        pass
+        weight = 0
+        fout = open(output_path, "a")
+        fout.write("Минимальное остовное дерево:\n")
+        for edge in tree:
+            fout.write(f"({edge.__str__()}) ")
+            weight += edge.weight
+        fout.write(f"\nВес: {weight}\n")
 
 
 if __name__ == "__main__":

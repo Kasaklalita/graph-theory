@@ -222,62 +222,62 @@ def find_bridges(graph: Graph):
     return bridges
 
 
-# Компаратор для сортировки ребер по весу
-def edge_comparator(a: Edge, b: Edge) -> bool:
-    return (
-        a.weight < b.weight
-        or (a.weight == b.weight and a.a < b.a)
-        or (a.weight == b.weight and a.a == b.a and a.b < b.b)
-    )
+# # Компаратор для сортировки ребер по весу
+# def edge_comparator(a: Edge, b: Edge) -> bool:
+#     return (
+#         a.weight < b.weight
+#         or (a.weight == b.weight and a.a < b.a)
+#         or (a.weight == b.weight and a.a == b.a and a.b < b.b)
+#     )
 
 
-# Поиск вершины в списке множеств. Возвращает позицию множества с найденной вершиной
-def vertex_search(vertex_list: List[Set[int]], number: int) -> int:
-    for i in range(0, len(vertex_list)):
-        if number in vertex_list[i]:
-            return i
-    return -1
+# # Поиск вершины в списке множеств. Возвращает позицию множества с найденной вершиной
+# def vertex_search(vertex_list: List[Set[int]], number: int) -> int:
+#     for i in range(0, len(vertex_list)):
+#         if number in vertex_list[i]:
+#             return i
+#     return -1
 
 
-def kruskal(g: Graph) -> Set[Edge]:
-    parent = dict()
-    rank = dict()
+# def kruskal(g: Graph) -> Set[Edge]:
+#     parent = dict()
+#     rank = dict()
 
-    def make_set(vertice: int):
-        parent[vertice] = vertice
-        rank[vertice] = 0
+#     def make_set(vertice: int):
+#         parent[vertice] = vertice
+#         rank[vertice] = 0
 
-    def find(vertice: int):
-        if parent[vertice] != vertice:
-            parent[vertice] = find(parent[vertice])
-        return parent[vertice]
+#     def find(vertice: int):
+#         if parent[vertice] != vertice:
+#             parent[vertice] = find(parent[vertice])
+#         return parent[vertice]
 
-    def union(vertice1: int, vertice2: int):
-        root1 = find(vertice1)
-        root2 = find(vertice2)
-        if root1 != root2:
-            if rank[root1] > rank[root2]:
-                parent[root2] = root1
-        else:
-            parent[root1] = root2
-        if rank[root1] == rank[root2]:
-            rank[root2] += 1
+#     def union(vertice1: int, vertice2: int):
+#         root1 = find(vertice1)
+#         root2 = find(vertice2)
+#         if root1 != root2:
+#             if rank[root1] > rank[root2]:
+#                 parent[root2] = root1
+#         else:
+#             parent[root1] = root2
+#         if rank[root1] == rank[root2]:
+#             rank[root2] += 1
 
-    # for vertice in graph["vertices"]:
-    minimum_spanning_tree: Set[Edge] = set()
-    for i in range(0, g.vertex_num):
-        vertice = i
-        make_set(vertice)
-        # edges = list(graph["edges"])
-        edges = g.edge_list
-        edges.sort(key=lambda edge: edge.weight)
-        # print edges
-        for edge in edges:
-            if find(edge.a) != find(edge.b):
-                union(edge.a, edge.b)
-            minimum_spanning_tree.add(edge)
+#     # for vertice in graph["vertices"]:
+#     minimum_spanning_tree: Set[Edge] = set()
+#     for i in range(0, g.vertex_num):
+#         vertice = i
+#         make_set(vertice)
+#         # edges = list(graph["edges"])
+#         edges = g.edge_list
+#         edges.sort(key=lambda edge: edge.weight)
+#         # print edges
+#         for edge in edges:
+#             if find(edge.a) != find(edge.b):
+#                 union(edge.a, edge.b)
+#             minimum_spanning_tree.add(edge)
 
-    return minimum_spanning_tree
+#     return minimum_spanning_tree
 
 
 # # Алгоритм Краскала
@@ -434,36 +434,165 @@ def kruskal(g: Graph) -> Set[Edge]:
 #     return result
 
 
-def prim(g: Graph) -> Set[Edge]:
-    result: Set[Edge] = set()
-    tree_vertices = {0}  # начальная вершина - 1
-    edge_list = g.list_of_edges_by_vertex(0)  # список инцидентных дереву ребер
+# def prim(g: Graph) -> Set[Edge]:
+#     result: Set[Edge] = set()
+#     tree_vertices = {0}  # начальная вершина - 1
+#     edge_list = g.list_of_edges_by_vertex(0)  # список инцидентных дереву ребер
 
-    # пока все вершины не добавлены в дерево
-    while len(tree_vertices) != g.vertex_num:
-        # сортировка списка ребер
-        print("edge sorting")
-        edge_list.sort(key=cmp_to_key(edge_comparator))
-        print(edge_list)
-        print("end sorting")
+#     # пока все вершины не добавлены в дерево
+#     while len(tree_vertices) != g.vertex_num:
+#         # сортировка списка ребер
+#         print("edge sorting")
+#         edge_list.sort(key=cmp_to_key(edge_comparator))
+#         print(edge_list)
+#         print("end sorting")
 
-        # поиск первого ребра, не создающего цикла
-        i = 0
-        while edge_list[i].b in tree_vertices:
-            i += 1
-        # добавление полученного ребра
-        result.add(edge_list[i])
+#         # поиск первого ребра, не создающего цикла
+#         i = 0
+#         while edge_list[i].b in tree_vertices:
+#             i += 1
+#         # добавление полученного ребра
+#         result.add(edge_list[i])
 
-        # добавление вершины в дерево
-        tree_vertices.add(edge_list[i].b)
+#         # добавление вершины в дерево
+#         tree_vertices.add(edge_list[i].b)
 
-        # добавление всех инцидентных ребер, не ведущих в дерево, в список
-        for e in g.list_of_edges_by_vertex(edge_list[i].b):
-            if e.b not in tree_vertices:
-                edge_list.append(e)
-        # удаление добавленного ребра из списка
-        edge_list.pop(i)
-    return result
+#         # добавление всех инцидентных ребер, не ведущих в дерево, в список
+#         for e in g.list_of_edges_by_vertex(edge_list[i].b):
+#             if e.b not in tree_vertices:
+#                 edge_list.append(e)
+#         # удаление добавленного ребра из списка
+#         edge_list.pop(i)
+#     return result
+
+
+def prim(g: Graph) -> List[Edge]:
+    # Создаем список для хранения выбранных вершин
+    selected: List[bool] = [False] * g.vertex_num
+    # Инициализируем список для хранения ребер минимального остовного дерева
+    mst: List[Edge | None] = [None] * (g.vertex_num - 1)
+
+    # Помечаем первую вершину как выбранную
+    selected[0] = True
+
+    # Итерируемся, пока не выберем все вершины
+    for _ in range(g.vertex_num - 1):
+        min_weight = INF
+        u, v = -1, -1
+
+        # Ищем ребро с минимальным весом, где одна вершина уже выбрана, а другая - нет
+        for i in range(g.vertex_num):
+            if selected[i]:
+                for j in range(g.vertex_num):
+                    if not selected[j] and g.adj_matrix[i][j]:
+                        if g.adj_matrix[i][j] < min_weight:
+                            min_weight = g.adj_matrix[i][j]
+                            u, v = i, j
+
+        # Добавляем найденное ребро к минимальному остовному дереву
+        mst[_] = Edge(u, v, g.adj_matrix[u][v])
+        selected[v] = True
+
+    return mst
+
+
+# АЛГОРИТМ КРАСКАЛА
+def kruskal(g: Graph) -> List[Edge]:
+    def find(parent, i):
+        # Находим корень вершины i
+        while parent[i] != i:
+            i = parent[i]
+        return i
+
+    def union(parent, rank, x, y):
+        # Объединяем два множества по рангу
+        x_root = find(parent, x)
+        y_root = find(parent, y)
+
+        if rank[x_root] < rank[y_root]:
+            parent[x_root] = y_root
+        elif rank[x_root] > rank[y_root]:
+            parent[y_root] = x_root
+        else:
+            parent[y_root] = x_root
+            rank[x_root] += 1
+
+    # Инициализируем родительский массив и массив рангов
+    parent = [i for i in range(g.vertex_num)]
+    rank = [0] * g.vertex_num
+    # Инициализируем список для хранения ребер минимального остовного дерева
+    mst: List[Edge] = []
+
+    # Сортируем ребра графа по возрастанию весов
+    edges: List[Edge] = sorted(g.edge_list, key=lambda edge: edge.weight)
+
+    # Проходим по всем ребрам и добавляем их к минимальному остовному дереву,
+    # если они не создадут цикл
+    for edge in edges:
+        # u, v, weight = edge
+        u_root = find(parent, edge.a)
+        v_root = find(parent, edge.b)
+
+        if u_root != v_root:
+            # mst.append((u, v))
+            mst.append(edge)
+            union(parent, rank, u_root, v_root)
+
+    return mst
+
+
+# Алгоритм Борувки
+def boruvka(g: Graph):
+    # Функция для поиска компонента с минимальным весом ребра
+    def find_min_edge(adj_matrix: List[List[int]], comp: Set[int]) -> Edge:
+        # min_edge = [None, None, float("inf")]
+        # min_edge = Edge(-1, -1, INF)
+        minimum_edge = Edge(-1, -1, INF)
+        for u in comp:
+            for v in range(g.vertex_num):
+                if (
+                    adj_matrix[u][v] != 0
+                    and adj_matrix[u][v] < minimum_edge.weight
+                    and v not in comp
+                ):
+                    # min_edge = [u, v, graph[u][v]]
+                    minimum_edge = Edge(u, v, adj_matrix[u][v])
+        return minimum_edge
+
+    # Функция для объединения компонент
+    def union_components(components, comp1, comp2):
+        components[comp1] |= components[comp2]
+        components.pop(comp2)
+
+    components: List[Set[int]] = [{v} for v in range(g.vertex_num)]
+    min_spanning_tree = []
+
+    while len(components) > 1:
+        # cheapest = [None, None, float("inf")]
+        cheapest = Edge(-1, -1, INF)
+
+        # Находим минимальные ребра для каждой компоненты
+        for comp in components:
+            min_edge = find_min_edge(g.adj_matrix, comp)
+            if min_edge.weight < cheapest.weight:
+                cheapest = min_edge
+
+        comp1 = None
+        comp2 = None
+
+        # Находим компоненты, к которым принадлежат концы минимального ребра
+        for i, comp in enumerate(components):
+            if cheapest.a in comp:
+                comp1 = i
+            if cheapest.b in comp:
+                comp2 = i
+
+        # Если компоненты различны, добавляем ребро в минимальное остовное дерево
+        if comp1 != comp2:
+            min_spanning_tree.append(cheapest)
+            union_components(components, comp1, comp2)
+
+    return min_spanning_tree
 
 
 # Алгоритм Дейкстры
