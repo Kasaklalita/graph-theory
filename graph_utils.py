@@ -493,7 +493,7 @@ def prim(g: Graph) -> List[Edge]:
         mst[_] = Edge(u, v, g.adj_matrix[u][v])
         selected[v] = True
 
-    return mst
+    return mst  # type: ignore
 
 
 # АЛГОРИТМ КРАСКАЛА
