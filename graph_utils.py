@@ -353,33 +353,44 @@ def dijkstra(start: int, end: int, g: Graph) -> Tuple[int, List[Edge]]:
 
 # Алгоритм дейкстры, возвращает расстояние до вершин
 def dijkstra_for_distances(start: int, g: Graph) -> List[int]:
-    # ИНДЕКСЫ
-    start = start - 1
-    current_path = 0
-    paths: List[int] = [INF] * g.vertex_num
-    visited: List[bool] = [False] * g.vertex_num
-    prev = [-1] * g.vertex_num
+    start = start - 1  # Получаем индекс стартовой вершины
+    current_path = 0  # Текущая длина пути
+    paths: List[int] = [INF] * g.vertex_num  # Расстояния до остальных вершин
+    visited: List[bool] = [False] * g.vertex_num  # Посещённость вершин
+    prev = [-1] * g.vertex_num  # Предыдущие вершины для каждой вершины
 
+    # Поиск вершины, расстояние до которой минимально
     def find_min_vertex():
-        min_value = INF + 1
-        min_vertex = -1
+        min_value = INF + 1  # Значение для поиска минимума
+        min_vertex = -1  # Вершина, расстояние до которой минимально
+        # Идём по всем вершинам
         for i in range(g.vertex_num):
+            # Если расстояние до вершины меньше минимума и вершина не посещена
             if paths[i] < min_value and not visited[i]:
+                # Обновляем нминимальный путь
                 min_value = paths[i]
+                # Обновляем минимальную вершину
                 min_vertex = i
         return min_vertex
 
+    # Расстояние до начальной вершины равно нулю
     paths[start] = 0
+    # Предыдущая вершина для стартовой - стартовая
     prev[start] = start
 
     # Ищем само расстояние
     for i in range(g.vertex_num):
+        # Ищем следующую минимальную вершину
         start = find_min_vertex()
+        # Текущий путь до вершины
         current_path = paths[start]
+        # Идём по всем рёбрам, которые инцидентны текущей вершине
         for edge in g.list_of_edges_by_vertex(start):
+            # До каждой вершины обновляем путь
             if current_path + edge.weight < paths[edge.b]:
                 paths[edge.b] = current_path + edge.weight
                 prev[edge.b] = edge.a
+        # Отмечаем текущую вершину посещённой
         visited[start] = True
     return paths
 
@@ -392,16 +403,19 @@ def bellman_ford_moore(start: int, g: Graph) -> List[int]:
 
     # Идём по каждой оставшейся вершине
     for i in range(0, g.vertex_num - 1):
-        # Идём по каждому ребру
+        # Идём по каждому ребру графа
         for edge in g.edge_list:
             if distances[edge.b] > distances[edge.a] + edge.weight:
                 distances[edge.b] = distances[edge.a] + edge.weight
     return distances
 
 
+# Ищем отрицательный цикл
 def find_neg_cycle(g: Graph) -> bool:
+    # Идём алгоритмом Беллма-Форда-Мура
     dist = bellman_ford_moore(1, g)
 
+    # И идём ещё раз
     for edge in g.edge_list:
         if dist[edge.b] > dist[edge.a] + edge.weight:
             return True
@@ -437,14 +451,18 @@ def levit(start: int, g: Graph):
         for e in g.list_of_edges_by_vertex(current_vertex):
             # Соседняя вершина
             next_vertex = e.b
+            # Если следующая вершина есть в очереди вершин, расстояние до которых вычислено
             if next_vertex in m0:
                 dist[next_vertex] = dist[current_vertex] + e.weight
                 m0.remove(next_vertex)
                 m1.append(next_vertex)
+            # Если вершина есть в очереди, расстояние до которых вычисляется
             elif next_vertex in m1:
+                # Обновляем расстояние до вершины
                 dist[next_vertex] = min(
                     dist[next_vertex], dist[current_vertex] + e.weight
                 )
+            # Если расстояние до вершины вообще не вычислено
             else:
                 if dist[next_vertex] > dist[current_vertex] + e.weight:
                     dist[next_vertex] = dist[current_vertex] + e.weight
@@ -457,7 +475,9 @@ def levit(start: int, g: Graph):
 
 # Алгоритм Джонсона
 def johnson(g: Graph) -> List[List[int]]:
+    # Матрица результата
     result: List[List[int]] = []
+    # Количество вершин в графе
     n = g.vertex_num
 
     h: List[int] = [INF] * (n + 1)
