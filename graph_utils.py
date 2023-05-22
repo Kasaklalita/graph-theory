@@ -173,6 +173,7 @@ def find_bridges(graph: Graph):
     return bridges
 
 
+# Алгоритм Прима
 def prim(g: Graph) -> List[Edge]:
     # Создаем список для хранения выбранных вершин
     selected: List[bool] = [False] * g.vertex_num
@@ -250,9 +251,12 @@ def kruskal(g: Graph) -> List[Edge]:
 def boruvka(g: Graph):
     # Функция для поиска компонента с минимальным весом ребра
     def find_min_edge(adj_matrix: List[List[int]], comp: Set[int]) -> Edge:
-        minimum_edge = Edge(-1, -1, INF)
+        minimum_edge = Edge(-1, -1, INF)  # Минимальное ребро
+        # Идём по всем вершинам из компоненты
         for u in comp:
+            # Идём по всем вершинам графа
             for v in range(g.vertex_num):
+                # Если между вершинами есть ребро, его вес меньше веса минимально ребра и вершина не в компоненте
                 if (
                     adj_matrix[u][v] != 0
                     and adj_matrix[u][v] < minimum_edge.weight
@@ -266,9 +270,12 @@ def boruvka(g: Graph):
         components[comp1] |= components[comp2]
         components.pop(comp2)
 
+    # Каждая вершина - компонент
     components: List[Set[int]] = [{v} for v in range(g.vertex_num)]
+    # Результат
     min_spanning_tree = []
 
+    # Пока больше одной компоненты
     while len(components) > 1:
         cheapest = Edge(-1, -1, INF)
 
@@ -425,7 +432,9 @@ def find_neg_cycle(g: Graph) -> bool:
 def levit(start: int, g: Graph):
     # Индекс начальной вершины
     start = start - 1
-    m0 = deque()  # Вершины, расстояние до которых уже вычислено
+    m0 = (
+        deque()
+    )  # Вершины, расстояние до которых уже вычислено (возможно, не окончательно)
     m1 = deque()  # Вершины, расстояние до которых вычисляется
     m2 = deque()  # Вершины, для которых не вычислено
 
@@ -480,6 +489,7 @@ def johnson(g: Graph) -> List[List[int]]:
     # Количество вершин в графе
     n = g.vertex_num
 
+    # Список эвристических значений вершин
     h: List[int] = [INF] * (n + 1)
     h[n] = 0
 
@@ -492,7 +502,7 @@ def johnson(g: Graph) -> List[List[int]]:
         for edge in edited_edge_list:
             h[edge.b] = min(h[edge.b], h[edge.a] + edge.weight)
 
-    # Пересчёт весов исходного графа
+    # Пересчёт весов исходного графа через разность эвристических значений
     for edge in g.edge_list:
         edge.weight += h[edge.a] - h[edge.b]
 
@@ -506,3 +516,46 @@ def johnson(g: Graph) -> List[List[int]]:
         result.append(true_dist)
 
     return result
+
+
+def hamiltonian_path(g: Graph, start_vertex: int):
+    start_vertex = start_vertex - 1
+    path = [-1] * g.vertex_num  # Инициализация пути
+    path[0] = start_vertex  # Заданная начальная вершина
+
+    def is_valid(v, pos):
+        # Проверка, можно ли добавить вершину v в путь на позицию pos
+        if g.adj_matrix[path[pos - 1]][v] == 0:
+            return False
+
+        # Проверка, не посещалась ли уже вершина v в пути
+        if v in path[:pos]:
+            return False
+
+        return True
+
+    def solve_hamiltonian_path(pos):
+        # Все вершины уже добавлены в путь
+        if pos == g.vertex_num:
+            # Проверка наличия ребра от последней вершины к начальной
+            if g.adj_matrix[path[pos - 1]][path[0]] == 1:
+                return True
+            else:
+                return False
+
+        for v in range(g.vertex_num):
+            if is_valid(v, pos):
+                path[pos] = v
+                if solve_hamiltonian_path(pos + 1):
+                    return True
+                # Откат и удаление вершины v из пути
+                path[pos] = -1
+
+        return False
+
+    # Вызов рекурсивной функции для поиска пути
+    if not solve_hamiltonian_path(start_vertex):
+        print("Гамильтонов путь не существует")
+        return None
+
+    return path
