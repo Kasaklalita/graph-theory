@@ -1,7 +1,7 @@
 from graph import Graph
 from utils import InputType, print_help_info, print_fail, print_success, INF
 import sys
-from graph_utils import find_neg_cycle, johnson
+from graph_utils import find_source_and_sink, ford_fulkerson
 
 
 def main():
@@ -59,44 +59,33 @@ def main():
 
     g = Graph(inputPath, inputType)
 
-    if g.has_negative and find_neg_cycle(g):
-        if outputKeyExists:
-            fout = open(outputPath, "w")
-            fout.write("В графе есть отрицательный цикл\n")
-            return
-        else:
-            print_fail("В графе есть отрицательный цикл")
-            return
+    source_vertex, sink_vertex = find_source_and_sink(g)
+    flow = ford_fulkerson(g, source_vertex, sink_vertex)
 
-    if g.has_negative:
-        if outputKeyExists:
-            fout = open(outputPath, "w")
-            fout.write("В графе есть рёбра отрицительного веса\n")
-        else:
-            print_fail("В графе есть рёбра отрицательного веса")
-    else:
-        if outputKeyExists:
-            fout = open(outputPath, "w")
-            fout.write("В графе нет рёбер отрицательного веса\n")
-        else:
-            print_success("В графе нет ребёр отрицательного веса")
-
-    dist = johnson(g)
+    # print(max_flow, source_vertex, sink_vertex)
 
     if outputKeyExists:
+        max_flow = 0
+        for i in range(len(flow)):
+            max_flow += flow[source_vertex][i]
         fout = open(outputPath, "w")
-        fout.write("Кратчайшие пути:")
-        for i in range(len(dist)):
-            for j in range(len(dist)):
-                if i != j and dist[i][j] < INF - 100:
-                    fout.write(f"{i + 1} - {j + 1}: {dist[i][j]}\n")
+        fout.write(f"Максимальный поток от {source_vertex + 1} до {sink_vertex + 1}")
+        for edge in g.edge_list:
+            fout.write(
+                f"{edge.a + 1} {edge.b + 1} {flow[edge.a][edge.b]} / {edge.weight}"
+            )
 
     else:
-        print_success("Кратчайшие пути:")
-        for i in range(len(dist)):
-            for j in range(len(dist)):
-                if i != j and dist[i][j] < INF - 100:
-                    print_success(f"{i + 1} - {j + 1}: {dist[i][j]}")
+        max_flow = 0
+        for i in range(len(flow)):
+            max_flow += flow[source_vertex][i]
+        print_success(
+            f"{max_flow} - максимальный поток от {source_vertex + 1} до {sink_vertex + 1}"
+        )
+        for edge in g.edge_list:
+            print_success(
+                f"{edge.a + 1} {edge.b + 1} {flow[edge.a][edge.b]}/{edge.weight}"
+            )
 
 
 if __name__ == "__main__":

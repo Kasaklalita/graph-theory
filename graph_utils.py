@@ -3,7 +3,7 @@ from typing import List, Set, Tuple
 from edge import Edge
 from utils import INF
 from copy import deepcopy
-from collections import deque
+from collections import deque, defaultdict
 
 
 def floyd_warshall(g: Graph) -> List[List[int]]:
@@ -559,3 +559,162 @@ def hamiltonian_path(g: Graph, start_vertex: int):
         return None
 
     return path
+
+
+# def ford_fulkerson(g: Graph, source: int, sink: int):
+#     # Получаем индексы
+#     source = source - 1
+#     sink = sink - 1
+
+#     def bfs(g: Graph, start, end, parent):
+#         visited = [False] * g.vertex_num
+#         queue = []
+#         queue.append(start)
+#         visited[start] = True
+#         while queue:
+#             u = queue.pop(0)
+#             for v in range(g.vertex_num):
+#                 if visited[v] == False and g.adj_matrix[u][v] > 0:
+#                     queue.append(v)
+#                     visited[v] = True
+#                     parent[v] = u
+#                     if v == end:
+#                         return True
+#         return False
+
+#     parent = [-1] * g.vertex_num
+#     max_flow = 0
+
+#     while bfs(g, source, sink, parent):
+#         path_flow = INF
+#         s = sink
+#         while s != source:
+#             path_flow = min(path_flow, g.adj_matrix[parent[s]][s])
+#             s = parent[s]
+
+#         max_flow += path_flow
+
+#         v = sink
+#         while v != source:
+#             u = parent[v]
+#             g.adj_matrix[u][v] -= path_flow
+#             g.adj_matrix[v][u] += path_flow
+#             v = parent[v]
+
+#     return max_flow
+
+
+# Using BFS as a searching algorithm
+# def searching_algo_BFS(g: Graph, s, t, parent):
+#     visited = [False] * g.vertex_num
+#     queue = []
+
+#     queue.append(s)
+#     visited[s] = True
+
+#     while queue:
+#         u = queue.pop(0)
+
+#         for ind, val in enumerate(g.adj_matrix[u]):
+#             if visited[ind] == False and val > 0:
+#                 queue.append(ind)
+#                 visited[ind] = True
+#                 parent[ind] = u
+
+#     return True if visited[t] else False
+
+
+# # Applying fordfulkerson algorithm
+# def ford_fulkerson(g: Graph, source, sink):
+#     g = deepcopy(g)
+#     parent = [-1] * g.vertex_num
+#     max_flow = 0
+
+#     while searching_algo_BFS(g, source, sink, parent):
+#         path_flow = INF
+#         s = sink
+#         while s != source:
+#             path_flow = min(path_flow, g.adj_matrix[parent[s]][s])
+#             s = parent[s]
+
+#         # Adding the path flows
+#         max_flow += path_flow
+
+#         # Updating the residual values of edges
+#         v = sink
+#         while v != source:
+#             u = parent[v]
+#             g.adj_matrix[u][v] -= path_flow
+#             g.adj_matrix[v][u] += path_flow
+#             v = parent[v]
+
+#     return max_flow
+
+
+def find_source_and_sink(g: Graph) -> Tuple[int, int]:
+    source: int = -1
+    sink: int = -1
+
+    matrix: List[List[int]] = deepcopy(g.adj_matrix)
+
+    for i in range(len(matrix)):
+        # Считаем сток: список смежности должен быть пустым
+        incident_edges: List[Edge] = g.list_of_edges_by_vertex(i)
+        if len(incident_edges) == 0:
+            sink = i
+
+        # Считаем источник: столбец в матрице должен быть пустым
+        all_zeroes = True
+        for j in range(len(matrix)):
+            if matrix[j][i] != 0:
+                all_zeroes = False
+                break
+
+        if all_zeroes:
+            source = i
+
+    return (source, sink)
+
+
+def dfs(matrix, start, goal, path, visited):
+    path.append(start)
+    visited[start] = True
+
+    if start == goal:
+        return path
+
+    for i in range(len(matrix)):
+        if not visited[i] and matrix[start][i] != 0:
+            result = dfs(matrix, i, goal, path, visited)
+            if len(result) != 0:
+                return result
+
+    path.pop()
+    return []
+
+
+def ford_fulkerson(g: Graph, source, sink):
+    matrix = deepcopy(g.adj_matrix)
+    remnant = [[0] * g.vertex_num for _ in range(g.vertex_num)]
+    difference = deepcopy(matrix)
+    path = dfs(difference, source, sink, [], [False] * g.vertex_num)
+
+    while len(path) != 0:
+        minCap = INF
+        for i in range(len(path) - 1):
+            if difference[path[i]][path[i + 1]] < minCap:
+                minCap = difference[path[i]][path[i + 1]]
+
+        for i in range(len(path) - 1):
+            a = path[i]
+            b = path[i + 1]
+            remnant[a][b] += minCap
+            remnant[b][a] -= minCap
+
+        for i in range(len(matrix)):
+            for j in range(len(matrix)):
+                difference[i][j] = matrix[i][j] - remnant[i][j]
+
+        path = dfs(difference, source, sink, [], [False] * g.vertex_num)
+
+    return remnant
