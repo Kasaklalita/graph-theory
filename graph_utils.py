@@ -654,19 +654,18 @@ def hamiltonian_path(g: Graph, start_vertex: int):
 def find_source_and_sink(g: Graph) -> Tuple[int, int]:
     source: int = -1
     sink: int = -1
-
-    matrix: List[List[int]] = deepcopy(g.adj_matrix)
-
-    for i in range(len(matrix)):
+    # Исток - это такая вершина, из которой рёбра выходят, но не входят
+    # В сток все входят, но никто не выходит из стока
+    for i in range(g.vertex_num):
         # Считаем сток: список смежности должен быть пустым
-        incident_edges: List[Edge] = g.list_of_edges_by_vertex(i)
+        incident_edges = g.list_of_edges_by_vertex(i)
         if len(incident_edges) == 0:
             sink = i
 
         # Считаем источник: столбец в матрице должен быть пустым
         all_zeroes = True
-        for j in range(len(matrix)):
-            if matrix[j][i] != 0:
+        for j in range(g.vertex_num):
+            if g.adj_matrix[j][i] != 0:
                 all_zeroes = False
                 break
 
@@ -676,45 +675,57 @@ def find_source_and_sink(g: Graph) -> Tuple[int, int]:
     return (source, sink)
 
 
+# Поиск в ширину
 def dfs(matrix, start, goal, path, visited):
-    path.append(start)
-    visited[start] = True
+    path.append(start)  # Добавляем текущую вершину в путь
+    visited[start] = True  # Помечаем текущую вершину как посещённую
 
-    if start == goal:
+    if start == goal:  # Если достигли целевой вершины, то возвращаем путь
         return path
 
+    # Идём по всем вершинам в матрице
     for i in range(len(matrix)):
+        # Если вершина не была посещена и есть ребро между текущей и i
         if not visited[i] and matrix[start][i] != 0:
+            # Рекурсивно вызываем DFS для вершины i
             result = dfs(matrix, i, goal, path, visited)
-            if len(result) != 0:
+            if len(result) != 0:  # Если найден путь, то возвращаем путь
                 return result
 
-    path.pop()
-    return []
+    path.pop()  # Если не удалось добраться до целевой вершины, то удаляем текущую вершину из пути
+    return []  # Возвращаем пустой путь
 
 
+# Форд-Фалкерсон
 def ford_fulkerson(g: Graph, source, sink):
-    matrix = deepcopy(g.adj_matrix)
-    remnant = [[0] * g.vertex_num for _ in range(g.vertex_num)]
-    difference = deepcopy(matrix)
+    # # Матрицу будем менять, поэтому глубокое копирование, чтобы
+    # matrix = deepcopy(g.adj_matrix)
+    remnant = [[0] * g.vertex_num for _ in range(g.vertex_num)]  # Матрица остатков
+    difference = deepcopy(g.adj_matrix)  # Матрица разницы
+    # Какой-либо путь из истока в сток
     path = dfs(difference, source, sink, [], [False] * g.vertex_num)
 
+    # Пока существует любой путь
     while len(path) != 0:
-        minCap = INF
+        minCap = INF  # Минимальная пропускная способность пути
+        # Находим минимальную пропускную способность на пути
         for i in range(len(path) - 1):
             if difference[path[i]][path[i + 1]] < minCap:
                 minCap = difference[path[i]][path[i + 1]]
 
+        # Обновляем матрицу остатков
         for i in range(len(path) - 1):
             a = path[i]
             b = path[i + 1]
             remnant[a][b] += minCap
             remnant[b][a] -= minCap
 
-        for i in range(len(matrix)):
-            for j in range(len(matrix)):
-                difference[i][j] = matrix[i][j] - remnant[i][j]
+        # Обновляем матрицу разницы
+        for i in range(g.vertex_num):
+            for j in range(g.vertex_num):
+                difference[i][j] = g.adj_matrix[i][j] - remnant[i][j]
 
+        # Ищем новый путь
         path = dfs(difference, source, sink, [], [False] * g.vertex_num)
 
-    return remnant
+    return remnant  # Возвращаем матрицу остатков
