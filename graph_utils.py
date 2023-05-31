@@ -698,8 +698,6 @@ def dfs(matrix, start, goal, path, visited):
 
 # Форд-Фалкерсон
 def ford_fulkerson(g: Graph, source, sink):
-    # # Матрицу будем менять, поэтому глубокое копирование, чтобы
-    # matrix = deepcopy(g.adj_matrix)
     remnant = [[0] * g.vertex_num for _ in range(g.vertex_num)]  # Матрица остатков
     difference = deepcopy(g.adj_matrix)  # Матрица разницы
     # Какой-либо путь из истока в сток
